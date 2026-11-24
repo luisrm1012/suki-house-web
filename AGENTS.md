@@ -1,3 +1,7 @@
+## Workflow for changes
+
+For any code change, new feature, fix or refactor, use the `plan-implement` skill (`.claude/skills/plan-implement/`): a `feature-planner` subagent plans in plan mode and splits the work into mini tasks with a model and effort each, then up to 10 `task-implementer` subagents implement them in parallel waves.
+
 ## Development
 
 When starting the dev server, use background mode:
