@@ -1,7 +1,8 @@
 ---
 import { Picture } from 'astro:assets';
 import type { Property } from '../../data/site';
-import { getLang, getData, localizePath } from '../../i18n';
+import { getLang, localizePath } from '../../i18n';
+import { getHousePrice, formatPrice } from '../../data/prices';
 
 interface Props {
   property: Property;
@@ -9,7 +10,7 @@ interface Props {
 }
 const { property: p, bookHref = '#reservar' } = Astro.props;
 const lang = getLang(Astro.currentLocale);
-const { PRICE_PLACEHOLDER } = getData(lang);
+const price = formatPrice(getHousePrice(p.id), lang);
 const t = {
   es: { rooms: 'habitaciones', from: 'Desde', night: ' / noche', view: 'Ver habitaciones', viewOf: ' de ', book: 'Reservar', bookIn: ' en ' },
   en: { rooms: 'rooms', from: 'From', night: ' / night', view: 'View rooms', viewOf: ' at ', book: 'Book', bookIn: ' at ' },
@@ -43,7 +44,7 @@ const roomsLabel = `${p.rooms} ${t.rooms}`;
     </ul>
     <p class="summary">{p.summary}</p>
     <div class="foot">
-      <p class="price">{t.from} <strong>{PRICE_PLACEHOLDER}</strong><span class="per">{t.night}</span></p>
+      <p class="price">{t.from} <strong>{price}</strong><span class="per">{t.night}</span></p>
       <div class="actions">
         <a class="btn btn--outline more" href={localizePath(p.href, lang)}>{t.view}<span class="visually-hidden">{t.viewOf}{p.name}</span></a>
         <a class="btn btn--cta book" href={bookHref}>{t.book}<span class="visually-hidden">{t.bookIn}{p.name}</span></a>

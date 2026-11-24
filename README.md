@@ -28,7 +28,8 @@ y configura el DNS según la guía de GitHub Pages.
 ## Antes de publicar
 
 - La URL pública sale de `SITE_URL` y `BASE_PATH` (`astro.config.mjs` o variables del workflow): canonical, Open Graph, sitemap, robots y llms la usan.
-- Sustituye los marcadores del diseño en `src/data/site.ts`: precios `[XX] €`, capacidad `[N] personas`, distancias `[X] min` de Vallarta y la política de cancelación.
+- Los precios se editan en `src/data/prices.ts`.
+- Sustituye los marcadores del diseño en `src/data/site.ts`: capacidad `[N] personas`, distancias `[X] min` de Vallarta y la política de cancelación.
 - Los formularios de reserva apuntan a `#`: conéctalos al motor de reservas.
 - `public/_headers` (Netlify / Cloudflare Pages) define caché inmutable para `/_astro/*` y cabeceras de seguridad.
 

@@ -1,9 +1,13 @@
 ---
-import { getLang, getData, localizePath } from '../i18n';
+import { getLang, getData, localizePath, stripLang } from '../i18n';
+import { getHousePrice, getMinPrice, formatPrice } from '../data/prices';
 import Icon from './Icon.astro';
 interface Props { href?: string }
 const lang = getLang(Astro.currentLocale);
-const { site, PRICE_PLACEHOLDER } = getData(lang);
+const { site, properties } = getData(lang);
+const logical = stripLang(Astro.url.pathname);
+const house = properties.find((p) => p.href === logical)?.id;
+const price = formatPrice(house ? getHousePrice(house) : getMinPrice(), lang);
 const t = {
   es: { wa: 'Escribir por WhatsApp', book: 'Reservar · desde' },
   en: { wa: 'Message us on WhatsApp', book: 'Book · from' },
@@ -12,7 +16,7 @@ const href = localizePath(Astro.props.href ?? '/#reservar', lang);
 ---
 <div class="bar">
   <a class="wa" href={site.whatsapp.href} aria-label={t.wa}><Icon name="whatsapp" size={24} /></a>
-  <a class="cta" {href}>{t.book} {PRICE_PLACEHOLDER}</a>
+  <a class="cta" {href}>{t.book} {price}</a>
 </div>
 <style>
   .bar { display: none; }

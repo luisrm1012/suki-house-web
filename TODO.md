@@ -20,7 +20,7 @@ Prioridad: 🔴 antes de promocionar la web · 🟠 importante · 🟢 mejora.
 
 ## 2. Contenido pendiente (marcadores en la web)
 
-- [ ] 🔴 Precios reales: todos los `[XX] €` (`PRICE_PLACEHOLDER` y tarjetas de habitación).
+- [ ] 🔴 Precios reales: los precios están centralizados en `src/data/prices.ts`. Hay 5 habitaciones con precio (Pozuelo hab. 2, 3 y 6; Vallarta hab. 2 y 7); faltan las demás, que muestran `[XX] €`. Hay que completarlos y revisarlos periódicamente.
 - [ ] 🔴 Política de cancelación: `[Tu política]` y `[Plazo de cancelación gratuita]` en «Antes de reservar».
 - [ ] 🟠 Capacidad de las familiares de Pozuelo: `[N] personas`.
 - [ ] 🟠 Vallarta: minutos a pie al Metro L5, a IFEMA y al aeropuerto (`[X] min`), y **código postal** (mejora la precisión del mapa).
@@ -34,7 +34,7 @@ Prioridad: 🔴 antes de promocionar la web · 🟠 importante · 🟢 mejora.
 - [ ] 🔴 **Conectar los formularios al motor de reservas** (hoy envían a `#`). Encontrado en la web actual: `https://sukihouse-vallarta.amenitiz.io/es/booking/room` y `https://www.sukihouse.es/es/booking/room`. Pasar llegada, salida, huéspedes y casa como parámetros si Amenitiz lo admite.
 - [ ] 🔴 Botones «Reservar» de cada habitación → enlace directo a esa habitación en el motor.
 - [ ] 🟠 Enlaces «Ver detalles y fotos» y «Ver todas las fotos» (hoy `#`): galería por habitación (lightbox) o página de detalle.
-- [ ] 🟢 Precios dinámicos desde Amenitiz (si ofrece API o widget) en lugar de texto fijo.
+- [ ] 🟢 Precios dinámicos desde Amenitiz (si ofrece API o widget) en lugar de texto fijo. Amenitiz no tiene API pública documentada: su API interna no permite CORS y Cloudflare bloquea peticiones fuera del navegador. Alternativa: script local con Playwright que actualice `src/data/prices.ts`.
 
 ## 4. Dominio y despliegue
 

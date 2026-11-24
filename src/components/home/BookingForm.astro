@@ -5,10 +5,12 @@
 // cambia `action` (y si hace falta los `name`) por los que espere.
 import Icon from '../Icon.astro';
 import { getLang, getData } from '../../i18n';
+import { getMinPrice, formatPrice } from '../../data/prices';
 
 const lang = getLang(Astro.currentLocale);
 const d = getData(lang);
-const { bookingPerks, guestOptions, PRICE_PLACEHOLDER } = d;
+const { bookingPerks, guestOptions } = d;
+const price = formatPrice(getMinPrice(), lang);
 
 const t = {
   es: { any: 'Cualquiera', title: 'Reserva tu habitación', from: 'desde', night: '/ noche', house: '¿En qué casa?', checkIn: 'Llegada', checkOut: 'Salida', guests: 'Huéspedes', submit: 'Ver habitaciones libres' },
@@ -26,7 +28,7 @@ const defaultGuests = guestOptions[1];
 <form class="bf" aria-labelledby="res-title" method="get" action="#" data-booking>
   <div class="head full">
     <h2 id="res-title" class="title">{t.title}</h2>
-    <p class="from">{t.from} <strong>{PRICE_PLACEHOLDER}</strong> {t.night}</p>
+    <p class="from">{t.from} <strong>{price}</strong> {t.night}</p>
   </div>
 
   <div class="field full">

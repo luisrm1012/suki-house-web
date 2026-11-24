@@ -9,6 +9,7 @@ import {
   beforeBooking,
   includedEverywhere,
 } from '../data/site';
+import { getRoomPrice, getHousePrice, formatPrice, PRICES_UPDATED } from '../data/prices';
 
 // Omite cualquier valor con marcadores pendientes ("[X] min", "[N] personas", "[XX] €")
 const clean = (text: string) => !text.includes('[');
@@ -21,16 +22,22 @@ export const GET: APIRoute = ({ site: siteUrl }) => {
     const address = p.addressLines.filter(Boolean).join(', ');
     const link = p.href.startsWith('/') ? ` (${abs(base, p.href)})` : '';
     const bullets = p.bullets.filter(clean).map((b) => `  - ${b}`);
+    const housePrice = getHousePrice(p.id);
+    const priceLine = housePrice !== null ? [`  - Precio: desde ${formatPrice(housePrice, 'es')} / noche`] : [];
     return [
       `- ${p.name}${link}`,
       `  - Dirección: ${address}`,
       `  - Habitaciones: ${p.rooms}`,
+      ...priceLine,
       ...bullets,
     ].join('\n');
   });
 
-  const roomLine = (r: { name: string; description: string; chips: string[] }) =>
-    `- ${r.name} — ${r.description} (${r.chips.filter(clean).join(', ')})`;
+  const roomLine = (r: { id: string; name: string; description: string; chips: string[] }) => {
+    const price = getRoomPrice(r.id);
+    const priceText = price !== null ? ` — desde ${formatPrice(price, 'es')} / noche` : '';
+    return `- ${r.name} — ${r.description} (${r.chips.filter(clean).join(', ')})${priceText}`;
+  };
   const habitaciones = pozueloRooms.map(roomLine);
   const habitacionesVallarta = vallartaRooms.map(roomLine);
 
@@ -43,6 +50,7 @@ export const GET: APIRoute = ({ site: siteUrl }) => {
       .map((b) => `- ${b.label}: ${b.title}. ${b.note}.`),
     `- Incluido en todas las habitaciones de Pozuelo: ${includedEverywhere.filter(clean).join(', ')}`,
     `- Incluido en todas las habitaciones de Vallarta: ${vallartaIncluded.filter(clean).join(', ')}`,
+    `- Precios orientativos por noche, IVA incluido, tasa turística no incluida (actualizados el ${PRICES_UPDATED}); el precio final depende de las fechas.`,
   ];
 
   const contacto = [

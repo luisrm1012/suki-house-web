@@ -13,8 +13,10 @@ import BeforeBooking from './BeforeBooking.astro';
 import CtaBand from './CtaBand.astro';
 import { images } from '../../data/site';
 import { getLang, getData, localizePath } from '../../i18n';
+import { getHousePrice, formatPrice, type HouseId } from '../../data/prices';
 
 const lang = getLang(Astro.currentLocale);
+const priceRange = (id: HouseId) => { const v = getHousePrice(id); return v === null ? '€€' : `${lang === 'en' ? 'From' : 'Desde'} ${formatPrice(v, lang)}`; };
 const d = getData(lang);
 const { properties, pozueloRooms, ratings, site } = d;
 
@@ -92,7 +94,7 @@ const lodging = await Promise.all(
         addressCountry: 'ES',
       },
       numberOfRooms: p.rooms,
-      priceRange: '€€',
+      priceRange: priceRange(p.id),
       checkinTime: site.checkIn,
       checkoutTime: site.checkOut,
       amenityFeature: features,

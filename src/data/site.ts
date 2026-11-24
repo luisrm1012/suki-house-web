@@ -1,5 +1,5 @@
 // Contenido de Suki House (copy literal del diseño).
-// Los marcadores [XX] € / [N] / [X] min son datos pendientes del negocio: se mantienen tal cual.
+// Los precios están en ./prices.ts. Los marcadores [N] / [X] min son datos pendientes del negocio: se mantienen tal cual.
 import type { ImageMetadata } from 'astro';
 
 import entrada from '../assets/images/entrada.jpg';
@@ -58,8 +58,6 @@ export const vallartaImages = {
   galeria5: vGaleria5,
   hab5Terraza: vHab5Terraza,
 } satisfies Record<string, ImageMetadata>;
-
-export const PRICE_PLACEHOLDER = '[XX] €';
 
 export const site = {
   name: 'Suki House',

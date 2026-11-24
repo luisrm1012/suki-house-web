@@ -1,7 +1,8 @@
 ---
 import { Picture } from 'astro:assets';
 import type { Room } from '../data/site';
-import { getLang, getData, localizePath } from '../i18n';
+import { getLang, localizePath } from '../i18n';
+import { getRoomPrice, formatPrice } from '../data/prices';
 interface Props {
   room: Room;
   variant: 'compact' | 'row';
@@ -10,7 +11,7 @@ interface Props {
 }
 const { room, variant, headingLevel = 3 } = Astro.props;
 const lang = getLang(Astro.currentLocale);
-const { PRICE_PLACEHOLDER } = getData(lang);
+const price = formatPrice(getRoomPrice(room.id), lang);
 const t = {
   es: { from: 'Desde', night: '/ noche', book: 'Reservar', more: 'Ver detalles y fotos' },
   en: { from: 'From', night: '/ night', book: 'Book', more: 'See details and photos' },
@@ -30,7 +31,7 @@ const sizes = variant === 'compact' ? '(min-width: 1000px) 376px, (min-width: 76
       <H class="c-title">{room.name}</H>
       <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>
       <div class="c-foot">
-        <p class="price">{t.from} <strong>{PRICE_PLACEHOLDER}</strong></p>
+        <p class="price">{t.from} <strong>{price}</strong></p>
         <a class="btn btn--primary" href={bookHref}>{t.book}<span class="visually-hidden">: {room.name}</span></a>
       </div>
     </div>
@@ -47,7 +48,7 @@ const sizes = variant === 'compact' ? '(min-width: 1000px) 376px, (min-width: 76
       <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>
     </div>
     <div class="r-aside">
-      <p class="price">{t.from} <strong>{PRICE_PLACEHOLDER}</strong> {t.night}</p>
+      <p class="price">{t.from} <strong>{price}</strong> {t.night}</p>
       <a class="btn btn--cta" href={bookHref}>{t.book}<span class="visually-hidden">: {room.name}</span></a>
       <a class="more" href="#">{t.more}<span class="visually-hidden">: {room.name}</span></a>
     </div>

@@ -1,5 +1,5 @@
 // English version of Suki House content (same shape as ./site).
-// [XX] € / [N] / [X] min placeholders are pending business data: kept as is.
+// Prices live in ./prices.ts. [N] / [X] min placeholders are pending business data: kept as is.
 import type { Rating, Review, Property, RoomTag, Room } from './site';
 import { images } from './site';
 
@@ -16,8 +16,6 @@ import vHab5 from '../assets/images/vallarta/hab-5.jpg';
 import vHab6 from '../assets/images/vallarta/hab-6.jpg';
 import vHab7 from '../assets/images/vallarta/hab-7.jpg';
 import vHab8 from '../assets/images/vallarta/hab-8.jpg';
-
-export const PRICE_PLACEHOLDER = '[XX] €';
 
 export const site = {
   name: 'Suki House',

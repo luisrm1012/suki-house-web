@@ -7,6 +7,7 @@ import RoomCard from './RoomCard.astro';
 import RatingBadge from './RatingBadge.astro';
 import MapEmbed from './MapEmbed.astro';
 import { getLang, getData, localizePath } from '../i18n';
+import { getHousePrice, formatPrice, type HouseId } from '../data/prices';
 import type { Property, Rating, Room, RoomTag, NavKey } from '../data/site';
 
 interface GalleryItem { img: ImageMetadata; alt: string }
@@ -28,6 +29,7 @@ interface Props {
 }
 const { property: p, path, current, title, description, kicker, rooms, filters, included, amenityFeatures, hero, gallery: galleryItems, ratings = [] } = Astro.props;
 const lang = getLang(Astro.currentLocale);
+const priceRange = (id: HouseId) => { const v = getHousePrice(id); return v === null ? '€€' : `${lang === 'en' ? 'From' : 'Desde'} ${formatPrice(v, lang)}`; };
 const { site, guestOptions } = getData(lang);
 const t = {
   es: {
@@ -73,7 +75,7 @@ const jsonLd = [
     email: site.email,
     address,
     numberOfRooms: p.rooms,
-    priceRange: '€€',
+    priceRange: priceRange(p.id),
     checkinTime: site.checkIn,
     checkoutTime: site.checkOut,
     amenityFeature: amenityFeatures.map((a) => ({ '@type': 'LocationFeatureSpecification', name: a, value: true })),
