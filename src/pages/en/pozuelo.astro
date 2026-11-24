@@ -1,0 +1,27 @@
+---
+import PropertyPage from '../../components/PropertyPage.astro';
+import { getData } from '../../i18n';
+
+const { images, ratings, properties, pozueloRooms, roomFilters, includedEverywhere, amenities } = getData('en');
+const property = properties.find((p) => p.id === 'pozuelo')!;
+---
+<PropertyPage
+  property={property}
+  path="/en/pozuelo"
+  current="alojamientos"
+  title="Rooms at Suki House Pozuelo · Pozuelo de Alarcón, Madrid"
+  description="Seven double and family rooms in a house with garden and terrace, a 10-minute walk from the train in Pozuelo de Alarcón. Book direct."
+  kicker="quiet residential living by the train"
+  rooms={pozueloRooms}
+  filters={roomFilters}
+  included={includedEverywhere}
+  amenityFeatures={[...amenities.map((a) => a.label), ...includedEverywhere]}
+  ratings={ratings.slice(0, 2)}
+  hero={{ img: images.entrada, alt: 'House entrance with the front door open' }}
+  gallery={[
+    { img: images.terraza, alt: 'Covered terrace with tables' },
+    { img: images.cocina, alt: 'Fully equipped kitchen' },
+    { img: images.jardin, alt: 'Garden seen from the terrace' },
+    { img: images.habDoblePremium, alt: 'Premium double room' },
+  ]}
+/>

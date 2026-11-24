@@ -1,0 +1,65 @@
+---
+import MapEmbed from '../MapEmbed.astro';
+import { getData, getLang } from '../../i18n';
+
+const lang = getLang(Astro.currentLocale);
+const d = getData(lang);
+
+const t = {
+  es: {
+    kicker: 'cerca de todo',
+    title: 'Dos ubicaciones, todo Madrid a mano',
+  },
+  en: {
+    kicker: 'close to everything',
+    title: 'Two locations, all of Madrid within reach',
+  },
+}[lang];
+---
+<section id="ubicacion" class="section" aria-labelledby="ubicacion-title">
+  <div class="container wrap">
+    <div class="col">
+      <div class="section-head">
+        <p class="kicker">{t.kicker}</p>
+        <h2 id="ubicacion-title" class="h2">{t.title}</h2>
+      </div>
+      {d.properties.map((p) => (
+        <div class="card">
+          <h3 class="name">{p.name}</h3>
+          <dl class="dist">
+            {p.distances.map((x) => (
+              <div class="row">
+                <dt>{x.place}</dt>
+                <dd>{x.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
+    </div>
+
+    <div class="map">
+      <MapEmbed places={d.properties.map((p) => ({ id: p.id, name: p.name, query: p.mapQuery }))} height={440} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .wrap { display: flex; flex-wrap: wrap; gap: 48px; align-items: flex-start; }
+  .col { flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+
+  .card { border: 1px solid var(--line); border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .name { font-size: 20px; line-height: 1.2; }
+  .dist { display: flex; flex-direction: column; gap: 8px; }
+  .row { display: flex; justify-content: space-between; gap: 16px; }
+  dd { font-weight: 800; color: var(--ink); white-space: nowrap; }
+
+  .map { flex: 1 1 480px; min-width: 0; }
+
+  @media (max-width: 767px) {
+    .wrap { gap: 24px; }
+    .col { gap: 16px; }
+    .card { padding: 18px; border-radius: 18px; }
+    .row { font-size: 16px; }
+  }
+</style>

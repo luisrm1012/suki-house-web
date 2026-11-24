@@ -1,0 +1,84 @@
+---
+import { Picture } from 'astro:assets';
+import type { Room } from '../data/site';
+import { getLang, getData, localizePath } from '../i18n';
+interface Props {
+  room: Room;
+  variant: 'compact' | 'row';
+  bookHref?: string;
+  headingLevel?: 2 | 3 | 4;
+}
+const { room, variant, headingLevel = 3 } = Astro.props;
+const lang = getLang(Astro.currentLocale);
+const { PRICE_PLACEHOLDER } = getData(lang);
+const t = {
+  es: { from: 'Desde', night: '/ noche', book: 'Reservar', more: 'Ver detalles y fotos' },
+  en: { from: 'From', night: '/ night', book: 'Book', more: 'See details and photos' },
+}[lang];
+const bookHref = localizePath(Astro.props.bookHref ?? (variant === 'compact' ? '#reservar' : '#disponibilidad'), lang);
+const H = `h${headingLevel}` as 'h3';
+const chips = variant === 'compact' ? (room.homeChips ?? room.chips) : room.chips;
+const alt = variant === 'compact' ? (room.homeImageAlt ?? room.imageAlt) : room.imageAlt;
+const sizes = variant === 'compact' ? '(min-width: 1000px) 376px, (min-width: 768px) 45vw, 100vw' : '(min-width: 768px) 300px, 100vw';
+---
+{variant === 'compact' ? (
+  <article class="card lift">
+    <div class="media c-media zoom">
+      <Picture src={room.image} formats={['avif', 'webp']} widths={[320, 480, 640, 722]} {sizes} width={722} height={480} fit="cover" quality={60} loading="lazy" decoding="async" {alt} />
+    </div>
+    <div class="c-body">
+      <H class="c-title">{room.name}</H>
+      <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>
+      <div class="c-foot">
+        <p class="price">{t.from} <strong>{PRICE_PLACEHOLDER}</strong></p>
+        <a class="btn btn--primary" href={bookHref}>{t.book}<span class="visually-hidden">: {room.name}</span></a>
+      </div>
+    </div>
+  </article>
+) : (
+  <article class="row lift lift--soft" data-tags={room.tags.join(' ')}>
+    <div class="media r-media zoom">
+      <Picture src={room.image} formats={['avif', 'webp']} widths={[320, 480, 640, 722]} {sizes} width={722} height={480} fit="cover" quality={60} loading="lazy" decoding="async" {alt} />
+    </div>
+    <div class="r-body">
+      {room.badge && <span class="badge">{room.badge}</span>}
+      <H class="r-title">{room.name}</H>
+      <p class="r-desc">{room.description}</p>
+      <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>
+    </div>
+    <div class="r-aside">
+      <p class="price">{t.from} <strong>{PRICE_PLACEHOLDER}</strong> {t.night}</p>
+      <a class="btn btn--cta" href={bookHref}>{t.book}<span class="visually-hidden">: {room.name}</span></a>
+      <a class="more" href="#">{t.more}<span class="visually-hidden">: {room.name}</span></a>
+    </div>
+  </article>
+)}
+<style>
+  .media { position: relative; overflow: hidden; }
+  .media :global(picture), .media :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .chips { list-style: none; margin: 0; padding: 0; }
+
+  .card { background: var(--white); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+  .c-media { height: 250px; }
+  .c-body { padding: 24px; display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; }
+  .c-title { font-size: 22px; line-height: 1.2; }
+  .c-foot { margin-top: auto; padding-top: 12px; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
+  .c-foot .price strong { font-size: 22px; }
+  .c-foot .btn { padding: 11px 20px; }
+
+  .row { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-wrap: wrap; background: var(--white); }
+  .r-media { flex: 1 1 280px; min-width: 0; height: 220px; }
+  .r-body { flex: 2 1 340px; min-width: 0; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .badge { align-self: flex-start; background: var(--ink); color: var(--white); font-size: 13px; font-weight: 800; padding: 3px 10px; border-radius: var(--pill); }
+  .r-title { font-size: 24px; line-height: 1.2; }
+  .r-desc { font-size: 16px; color: var(--text-2); }
+  .r-aside { flex: 1 1 200px; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: flex-start; border-left: 1px solid var(--line); }
+  .more { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 800; }
+  /* al apilarse, el borde lateral pasa arriba (el aside ocupa toda la fila) */
+  @media (max-width: 899px) {
+    .r-aside { flex-basis: 100%; border-left: 0; border-top: 1px solid var(--line); padding-block: 16px; flex-direction: row; flex-wrap: wrap; justify-content: flex-start; align-items: center; column-gap: 20px; }
+  }
+  @media (max-width: 767px) {
+    .r-media { flex-basis: 100%; }
+  }
+</style>

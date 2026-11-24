@@ -1,0 +1,71 @@
+---
+import { Image } from 'astro:assets';
+import { images } from '../data/site';
+import { getLang, getData, localizePath } from '../i18n';
+interface Props { variant?: 'full' | 'compact' }
+const { variant = 'full' } = Astro.props;
+const lang = getLang(Astro.currentLocale);
+const { legalLinks, properties, site } = getData(lang);
+const t = {
+  es: { blurb: 'Habitaciones en alquiler turístico en Pozuelo de Alarcón y Madrid.', contact: 'Contacto' },
+  en: { blurb: 'Short-stay guest rooms in Pozuelo de Alarcón and Madrid.', contact: 'Contact' },
+}[lang];
+---
+<footer class="ftr">
+  {variant === 'full' ? (
+    <div class="container full">
+      <div class="cols">
+        <div class="col brand">
+          <Image src={images.logo} widths={[178, 356]} sizes="178px" width={178} height={64} alt="Suki House rent a room" loading="lazy" />
+          <p>{t.blurb}</p>
+        </div>
+        {properties.map((p) => (
+          <address class="col">
+            <strong>{p.name}</strong>
+            <span>{p.addressLines[0]}</span>
+            <span>{p.addressLines[1]}</span>
+          </address>
+        ))}
+        <div class="col">
+          <strong>{t.contact}</strong>
+          {site.phones.map((ph) => <a href={ph.href}>{ph.label}</a>)}
+          <a href={`mailto:${site.email}`}>{site.email}</a>
+        </div>
+      </div>
+      <div class="bottom">
+        <span>© {site.year} {site.name}</span>
+        <ul>{legalLinks.map((l) => <li><a href={localizePath(l.href, lang)}>{l.label}</a></li>)}</ul>
+      </div>
+    </div>
+  ) : (
+    <div class="container compact">
+      <Image src={images.logo} widths={[156, 312]} sizes="156px" width={156} height={56} alt="Suki House rent a room" loading="lazy" />
+      <div class="links">
+        <a href={site.phones[0].href}>{site.phones[0].label}</a>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+        <a href={localizePath(legalLinks[0].href, lang)}>{legalLinks[0].label}</a>
+      </div>
+    </div>
+  )}
+</footer>
+<style>
+  .ftr { background: var(--mint-2); color: var(--ink); }
+  .ftr a { color: var(--ink); }
+  .ftr img { mix-blend-mode: multiply; height: auto; }
+  .full { padding-block: 56px 28px; display: flex; flex-direction: column; gap: 32px; }
+  .cols { display: flex; flex-wrap: wrap; gap: 32px 48px; justify-content: space-between; }
+  .col { flex: 1 1 200px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; font-style: normal; }
+  .col a { display: inline-block; padding-block: 3px; }
+  .col strong { font-size: 16px; }
+  .brand { flex-basis: 240px; gap: 12px; }
+  .brand p { max-width: 280px; }
+  .bottom { border-top: 1px solid var(--footer-rule); padding-top: 20px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; font-size: 14px; }
+  .bottom ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .bottom a { display: inline-block; padding-block: 6px; }
+  .compact { padding-block: 40px 28px; display: flex; flex-wrap: wrap; gap: 20px 48px; align-items: center; justify-content: space-between; }
+  .links { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 15px; font-weight: 700; }
+  .links a { display: inline-block; padding-block: 6px; }
+  @media (max-width: 767px) {
+    .full { padding-block: 40px 24px; }
+  }
+</style>

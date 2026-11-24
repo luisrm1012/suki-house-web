@@ -1,0 +1,324 @@
+/* Suki House — tokens y estilos base (extraídos del diseño) */
+@import '@fontsource-variable/nunito/index.css';
+@import '@fontsource/caveat/latin-700.css';
+
+:root {
+  /* Color */
+  --ink: #143F3E;            /* títulos, fondos oscuros */
+  --teal: #1F6B6A;           /* primario, links, kickers */
+  --text: #2B3A3A;           /* texto base */
+  --text-2: #3A4B4A;         /* párrafos */
+  --muted: #4F6160;          /* secundario */
+  --cta: #B8492F;            /* Reservar */
+  --accent: #D9822B;         /* borde superior del formulario */
+  --mint: #EAF4F1;           /* fondos alternos, chips */
+  --mint-2: #C2E2D9;         /* footer */
+  --line: #DCEBE7;           /* bordes suaves */
+  --field-border: #B9D3CD;
+  --field-bg: #F4FAF8;
+  --card-border: #CFE3DE;
+  --dark-card: #1F5756;      /* tarjetas sobre --ink */
+  --kicker-on-dark: #9FD3CC;
+  --cta-band: #57A3A2;
+  --cta-band-ink: #0E3231;
+  --footer-rule: #9CC9BE;
+  --map-grid: #D5E8E3;
+  --white: #FFFFFF;
+
+  /* Tipografía */
+  --font-sans: 'Nunito Variable', 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hand: 'Caveat', 'Comic Sans MS', cursive;
+  --fs-base: 17px;
+  --fs-h2: clamp(30px, 3.2vw, 44px);
+
+  /* Layout */
+  --container: 1200px;
+  --gutter: 24px;
+  --section-y: 88px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --pill: 999px;
+
+  --shadow-card: 0 16px 36px rgba(20, 63, 62, 0.14);
+  --shadow-badge: 0 8px 20px rgba(20, 63, 62, 0.18);
+}
+
+@media (max-width: 767px) {
+  :root {
+    --fs-base: 16px;
+    --gutter: 16px;
+    --section-y: 40px;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  scroll-padding-top: 16px;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--white);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img, picture, svg { display: block; max-width: 100%; }
+img { height: auto; }
+
+h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
+h1, h2, h3 { color: var(--ink); font-weight: 900; }
+
+a { color: var(--teal); }
+a:hover { color: var(--ink); }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Utilidades compartidas ---------- */
+
+.container {
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section { padding-block: var(--section-y); }
+.section--mint { background: var(--mint); }
+.section--dark { background: var(--ink); color: var(--white); }
+.section--dark h2, .section--dark h3 { color: var(--white); }
+
+/* Kicker manuscrito (Caveat) encima de los títulos */
+.kicker {
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 28px;
+  line-height: 1;
+  color: var(--teal);
+}
+.section--dark .kicker { color: var(--kicker-on-dark); }
+
+.h2 {
+  font-size: var(--fs-h2);
+  line-height: 1.1;
+}
+
+.section-head {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 720px;
+}
+
+.eyebrow {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+
+/* Botones / enlaces con forma de botón */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 22px;
+  border-radius: var(--pill);
+  border: 2px solid transparent;
+  font-weight: 800;
+  text-decoration: none;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.btn--cta { background: var(--cta); border-color: var(--cta); color: var(--white); }
+.btn--cta:hover { background: #9E3D26; border-color: #9E3D26; color: var(--white); }
+.btn--primary { background: var(--teal); border-color: var(--teal); color: var(--white); }
+.btn--primary:hover { background: var(--ink); border-color: var(--ink); color: var(--white); }
+.btn--outline { background: transparent; border-color: var(--teal); color: var(--teal); }
+.btn--outline:hover { background: var(--teal); color: var(--white); }
+.btn--white { background: var(--white); border-color: var(--white); color: var(--ink); }
+.btn--white:hover { background: var(--mint); border-color: var(--mint); color: var(--ink); }
+.btn--lg { padding: 14px 28px; font-size: 18px; }
+
+/* Chips (2 personas, Baño privado…) */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  background: var(--mint);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: var(--pill);
+}
+
+/* Precio "Desde [XX] €" */
+.price { font-size: 15px; color: var(--muted); }
+.price strong { font-size: 26px; font-weight: 900; color: var(--cta); }
+
+/* Lista con checks */
+.checklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.checklist li { display: flex; gap: 10px; align-items: center; }
+.checklist svg { flex: none; color: var(--teal); }
+
+/* Imágenes que llenan su caja */
+.cover { width: 100%; height: 100%; object-fit: cover; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px; top: -100px;
+  z-index: 100;
+  background: var(--ink);
+  color: var(--white);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+}
+.skip-link:focus { top: 16px; color: var(--white); }
+
+/* =========================================================
+   Movimiento — transiciones suaves y discretas
+   ========================================================= */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);      /* salida suave, tipo "expo" */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 180ms;
+  --dur-med: 320ms;
+  --dur-slow: 800ms;
+  --shadow-hover: 0 18px 40px rgba(20, 63, 62, 0.16);
+}
+
+/* Transiciones entre páginas (cross-document View Transitions, sin JS) */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: vt-out 200ms var(--ease-in-out) both; }
+::view-transition-new(root) { animation: vt-in 460ms var(--ease-out) both; }
+@keyframes vt-out { to { opacity: 0; } }
+@keyframes vt-in { from { opacity: 0; transform: translate3d(0, 12px, 0); } }
+[data-header] { view-transition-name: site-header; }
+.topbar { view-transition-name: site-topbar; }
+
+/* Entrada del primer pliegue (solo CSS; no oculta la foto LCP) */
+.enter {
+  animation: enter-up var(--dur-slow) var(--ease-out) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 60ms);
+}
+.enter-photo { animation: enter-photo 1200ms var(--ease-out) backwards; }
+.enter-photo img { animation: photo-settle 1600ms var(--ease-out) backwards; }
+@keyframes enter-up {
+  from { opacity: 0.01; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes enter-photo {
+  from { clip-path: inset(6% 4% 6% 4% round 28px); }
+  to { clip-path: inset(0 0 0 0 round 0); }
+}
+@keyframes photo-settle {
+  from { transform: scale(1.08); }
+  to { transform: scale(1); }
+}
+
+/* Aparición al hacer scroll (la activa src/scripts/motion.ts solo bajo el pliegue) */
+/* usa `translate` (no `transform`) para no pisar los hovers de las tarjetas */
+html.motion-ready [data-reveal] {
+  opacity: 0;
+  translate: 0 28px;
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    translate var(--dur-slow) var(--ease-out);
+  transition-delay: calc(min(var(--i, 0), 6) * 90ms);
+}
+html.motion-ready [data-reveal].is-in { opacity: 1; translate: none; }
+
+/* Fundido de fotos lazy al cargar */
+html.motion-ready img[data-fade] { opacity: 0; transition: opacity 700ms var(--ease-out), transform 900ms var(--ease-out); }
+html.motion-ready img[data-fade].is-loaded { opacity: 1; }
+
+/* Microinteracciones globales */
+.btn {
+  transition:
+    background-color var(--dur-med) var(--ease-out),
+    color var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    transform var(--dur-med) var(--ease-out);
+}
+@media (hover: hover) {
+  .btn:hover { transform: translate3d(0, -2px, 0); box-shadow: 0 10px 22px rgba(20, 63, 62, 0.16); }
+  .btn--cta:hover { box-shadow: 0 10px 24px rgba(184, 73, 47, 0.28); }
+}
+.btn:active { transform: scale(0.97); box-shadow: none; transition-duration: 90ms; }
+
+a { transition: color var(--dur-fast) var(--ease-out); }
+
+/* Tarjetas: elevación suave + zoom lento de la foto */
+.lift {
+  transition:
+    transform 500ms var(--ease-out),
+    box-shadow 500ms var(--ease-out),
+    border-color 500ms var(--ease-out);
+}
+.zoom { overflow: hidden; }
+.zoom img { transition: transform 1100ms var(--ease-out), opacity 700ms var(--ease-out); }
+@media (hover: hover) {
+  .lift:hover { transform: translate3d(0, -6px, 0); box-shadow: var(--shadow-hover); }
+  .lift--soft:hover { transform: translate3d(0, -3px, 0); border-color: var(--card-border); }
+  .lift:hover .zoom img, .zoom:hover img { transform: scale(1.05); }
+}
+
+input, select, textarea {
+  transition:
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    background-color var(--dur-med) var(--ease-out);
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(31, 107, 106, 0.16);
+  outline: none;
+}
+input:focus-visible, select:focus-visible { outline: none; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Respeta "reducir movimiento" */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+  html.motion-ready [data-reveal] { opacity: 1; translate: none; }
+  html.motion-ready img[data-fade] { opacity: 1; }
+  @view-transition { navigation: none; }
+}

@@ -1,0 +1,129 @@
+---
+import { Image } from 'astro:assets';
+import { images, type NavKey } from '../data/site';
+import { getLang, getData, localizePath, alternates, stripLang, LANG_LABEL, type Lang } from '../i18n';
+import Icon from './Icon.astro';
+interface Props { current?: NavKey; bookHref?: string }
+const lang = getLang(Astro.currentLocale);
+const d = getData(lang);
+const t = {
+  es: { home: 'Suki House, inicio', open: 'Abrir menú', close: 'Cerrar menú', nav: 'Principal', book: 'Reservar' },
+  en: { home: 'Suki House, home', open: 'Open menu', close: 'Close menu', nav: 'Main', book: 'Book' },
+}[lang];
+const { current } = Astro.props;
+const bookHref = localizePath(Astro.props.bookHref ?? '/#reservar', lang);
+// Selector móvil: muestra el OTRO idioma y enlaza a la página equivalente
+const other: Lang = lang === 'es' ? 'en' : 'es';
+// build con format 'file': la home llega como "/index" o "/en/index"
+const here = stripLang(Astro.url.pathname.replace(/\/index(\.html)?$/, '/'));
+const alt = alternates(here === '/404' ? '/' : here);
+---
+<script is:inline>document.documentElement.classList.add('js');</script>
+<header class="hdr" data-header>
+  <div class="container hdr__in">
+    <a class="logo" href={localizePath('/', lang)} aria-label={t.home}>
+      <Image src={images.logo} widths={[156, 312]} sizes="156px" height={56} alt="Suki House rent a room" loading="eager" />
+    </a>
+    <div class="hdr__right">
+      <a class="es-link" href={alt[other]} lang={other} hreflang={other}>{other.toUpperCase()}<span class="visually-hidden"> ({LANG_LABEL[other]})</span></a>
+      <button type="button" class="menu-btn" aria-expanded="false" aria-controls="site-nav" aria-label={t.open} data-label-open={t.open} data-label-close={t.close} data-menu-btn>
+        <span class="i-open"><Icon name="menu" size={22} /></span>
+        <span class="i-close"><Icon name="close" size={22} /></span>
+      </button>
+    </div>
+    <nav id="site-nav" class="nav" aria-label={t.nav} data-nav>
+      <ul>
+        {d.nav.map((n) => (
+          <li><a href={localizePath(n.href, lang)} class:list={{ current: n.key === current }} aria-current={n.key === current ? 'page' : undefined}>{n.label}</a></li>
+        ))}
+      </ul>
+      <a class="btn btn--cta book" href={bookHref}>{t.book}</a>
+    </nav>
+  </div>
+</header>
+<style>
+  .hdr { background: var(--white); border-bottom: 1px solid var(--line); position: relative; z-index: 20; }
+  .hdr__in { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 10px; }
+  .logo { display: block; flex: none; line-height: 0; }
+  .logo img { height: 56px; width: auto; mix-blend-mode: multiply; }
+  .nav { display: flex; align-items: center; gap: 28px; }
+  .nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 28px; }
+  .nav ul a { display: inline-block; padding: 12px 0; font-size: 16px; font-weight: 700; color: var(--ink); text-decoration: none; }
+  /* subrayado que se dibuja de izquierda a derecha */
+  .nav ul a {
+    background: linear-gradient(currentColor, currentColor) left calc(100% - 6px) / 0 2px no-repeat;
+    transition: background-size 420ms var(--ease-out), color var(--dur-fast) var(--ease-out);
+  }
+  .nav ul a:hover, .nav ul a.current { background-size: 100% 2px; }
+  .book { font-size: 16px; padding-inline: 24px; }
+  .hdr__right { display: none; }
+  .i-close { display: none; }
+  .menu-btn[aria-expanded='true'] .i-open { display: none; }
+  .menu-btn[aria-expanded='true'] .i-close { display: block; }
+
+  /* Tablet: como en el diseño, el nav pasa a una segunda línea en vez de desbordar */
+  @media (min-width: 768px) and (max-width: 1099px) {
+    .hdr__in { flex-wrap: wrap; row-gap: 4px; }
+    .nav { flex: 1 1 100%; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .nav ul { gap: 4px 22px; flex-wrap: wrap; }
+  }
+
+  @keyframes menu-in {
+    from { opacity: 0; transform: translate3d(0, -8px, 0); clip-path: inset(0 0 100% 0); }
+    to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+  }
+  @keyframes menu-item {
+    from { opacity: 0; transform: translate3d(0, -6px, 0); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes icon-spin {
+    from { transform: rotate(-90deg); opacity: 0; }
+    to { transform: none; opacity: 1; }
+  }
+
+  @media (max-width: 767px) {
+    .hdr__in { padding-block: 8px; gap: 12px; }
+    .logo img { height: 46px; }
+    .hdr__right { display: flex; align-items: center; gap: 8px; }
+    .es-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; font-weight: 800; color: var(--ink); text-decoration: underline; }
+    .menu-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; background: var(--white); color: var(--ink); border: 1px solid var(--field-border); border-radius: 12px; cursor: pointer; padding: 0; }
+    .nav { position: absolute; left: 0; right: 0; top: 100%; background: var(--white); border-bottom: 1px solid var(--line); box-shadow: 0 12px 24px rgba(20, 63, 62, 0.12); flex-direction: column; align-items: stretch; gap: 8px; padding: 8px 16px 16px; }
+    .nav ul { flex-direction: column; gap: 0; }
+    .nav ul a { display: block; padding: 12px 0; min-height: 44px; font-size: 17px; border-bottom: 1px solid var(--line); }
+    .book { width: 100%; }
+    /* con JS: panel oculto hasta abrirlo; sin JS: nav visible en flujo */
+    :global(html.js) .nav { display: none; }
+    :global(html.js) .nav.open { display: flex; animation: menu-in 380ms var(--ease-out) both; }
+    :global(html.js) .nav.open li, :global(html.js) .nav.open .book { animation: menu-item 460ms var(--ease-out) backwards; }
+    :global(html.js) .nav.open li:nth-child(2) { animation-delay: 40ms; }
+    :global(html.js) .nav.open li:nth-child(3) { animation-delay: 80ms; }
+    :global(html.js) .nav.open li:nth-child(4) { animation-delay: 120ms; }
+    :global(html.js) .nav.open li:nth-child(5) { animation-delay: 160ms; }
+    :global(html.js) .nav.open .book { animation-delay: 200ms; }
+    .nav ul a { background: none; }
+    .menu-btn { transition: background-color var(--dur-med) var(--ease-out), transform var(--dur-fast) var(--ease-out); }
+    .menu-btn:active { transform: scale(0.94); }
+    .menu-btn[aria-expanded='true'] { background: var(--mint); }
+    .menu-btn svg { transition: transform 420ms var(--ease-out); }
+    .menu-btn[aria-expanded='true'] .i-close svg { animation: icon-spin 420ms var(--ease-out); }
+    :global(html:not(.js)) .hdr__in { flex-wrap: wrap; }
+    :global(html:not(.js)) .menu-btn { display: none; }
+    :global(html:not(.js)) .nav { position: static; flex-basis: 100%; box-shadow: none; border: 0; padding: 0 0 12px; }
+  }
+</style>
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  if (btn && nav) {
+    const set = (open: boolean) => {
+      nav.classList.toggle('open', open);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', (open ? btn.dataset.labelClose : btn.dataset.labelOpen) ?? '');
+    };
+    btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('click', (e) => { if ((e.target as HTMLElement).closest('a')) set(false); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') { set(false); btn.focus(); }
+    });
+  }
+</script>

@@ -1,0 +1,26 @@
+---
+import PropertyPage from '../../components/PropertyPage.astro';
+import { getData } from '../../i18n';
+
+const { properties, vallartaRooms, vallartaFilters, vallartaIncluded, vallartaImages: v } = getData('en');
+const property = properties.find((p) => p.id === 'vallarta')!;
+---
+<PropertyPage
+  property={property}
+  path="/en/vallarta"
+  current="alojamientos"
+  title="Rooms at Suki House Vallarta · San Blas–Canillejas, Madrid"
+  description="Eight double and family rooms next to Metro line 5, with quick access to the airport and IFEMA. Modern comfort and direct booking."
+  kicker="modern comfort in San Blas–Canillejas"
+  rooms={vallartaRooms}
+  filters={vallartaFilters}
+  included={vallartaIncluded}
+  amenityFeatures={['Free WiFi', 'TV in the room', 'Terrace', 'Private bathroom with jacuzzi']}
+  hero={{ img: v.galeria1, alt: 'Bright room at Suki House Vallarta with a glazed bay window and wooden floor' }}
+  gallery={[
+    { img: v.hab5Terraza, alt: 'Private brick terrace with two chairs next to the family room' },
+    { img: v.galeria5, alt: 'Bedroom with terrace access and light blue decor' },
+    { img: v.galeria3, alt: 'Spacious room with a double bed and a large window' },
+    { img: v.galeria2, alt: 'Room with a bed, green pillows and a window overlooking the city' },
+  ]}
+/>

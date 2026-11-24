@@ -1,0 +1,26 @@
+---
+import PropertyPage from '../components/PropertyPage.astro';
+import { images, ratings, properties, pozueloRooms, roomFilters, includedEverywhere, amenities } from '../data/site';
+
+const property = properties.find((p) => p.id === 'pozuelo')!;
+---
+<PropertyPage
+  property={property}
+  path="/pozuelo"
+  current="alojamientos"
+  title="Habitaciones en Suki House Pozuelo · Pozuelo de Alarcón"
+  description="Siete habitaciones dobles y familiares en un chalet con jardín y terraza, a 10 min a pie del tren en Pozuelo de Alarcón. Reserva directa."
+  kicker="calma residencial junto al tren"
+  rooms={pozueloRooms}
+  filters={roomFilters}
+  included={includedEverywhere}
+  amenityFeatures={[...amenities.map((a) => a.label), ...includedEverywhere]}
+  ratings={ratings.slice(0, 2)}
+  hero={{ img: images.entrada, alt: 'Entrada de la casa con la puerta abierta' }}
+  gallery={[
+    { img: images.terraza, alt: 'Terraza cubierta con mesas' },
+    { img: images.cocina, alt: 'Cocina equipada' },
+    { img: images.jardin, alt: 'Jardín desde la terraza' },
+    { img: images.habDoblePremium, alt: 'Habitación doble premium' },
+  ]}
+/>

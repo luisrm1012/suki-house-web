@@ -1,0 +1,39 @@
+---
+import Icon from '../Icon.astro';
+import { getLang, getData } from '../../i18n';
+const lang = getLang(Astro.currentLocale);
+const { amenities } = getData(lang);
+const t = {
+  es: { aria: 'Lo que incluye tu estancia' },
+  en: { aria: 'What your stay includes' },
+}[lang];
+---
+<section class="strip" aria-label={t.aria}>
+  <ul class="container list">
+    {amenities.map((a) => (
+      <li><Icon name={a.icon} size={28} strokeWidth={1.8} />{a.label}</li>
+    ))}
+  </ul>
+</section>
+
+<style>
+  .strip { background: var(--mint); }
+  .list {
+    list-style: none;
+    margin-block: 0;
+    padding-block: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px 32px;
+    justify-content: space-between;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .list li { flex: 1 1 220px; display: flex; gap: 12px; align-items: center; }
+  .list :global(svg) { flex: none; color: var(--teal); }
+  @media (max-width: 767px) {
+    .list { padding-block: 24px; gap: 14px; }
+    .list li { flex-basis: 100%; font-size: 16px; }
+    .list :global(svg) { width: 24px; height: 24px; }
+  }
+</style>

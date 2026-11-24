@@ -1,0 +1,41 @@
+---
+import { getLang, getData, alternates, stripLang, LANG_LABEL } from '../i18n';
+const lang = getLang(Astro.currentLocale);
+const d = getData(lang);
+const phone = d.site.phones[0];
+// En la 404 no hay equivalente: el selector lleva al inicio de cada idioma
+// build con format 'file': la home llega como "/index" o "/en/index"
+const here = stripLang(Astro.url.pathname.replace(/\/index(\.html)?$/, '/'));
+const alt = alternates(here === '/404' ? '/' : here);
+---
+<div class="topbar">
+  <div class="container topbar__in">
+    <p class="topbar__claim"><span class="full">{d.site.claim}</span><span class="short">{d.site.claimShort}</span></p>
+    <p class="topbar__right">
+      <a href={phone.href}>{phone.label}</a>
+      <span class="lang">
+        <a href={alt.es} class="es" aria-current={lang === 'es' ? 'true' : undefined} lang="es" hreflang="es">ES<span class="visually-hidden"> ({LANG_LABEL.es})</span></a>
+        <span aria-hidden="true">·</span>
+        <a href={alt.en} class="en" aria-current={lang === 'en' ? 'true' : undefined} lang="en" hreflang="en">EN<span class="visually-hidden"> ({LANG_LABEL.en})</span></a>
+      </span>
+    </p>
+  </div>
+</div>
+<style>
+  .topbar { background: var(--ink); color: var(--white); font-size: 14px; font-weight: 600; }
+  .topbar__in { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: 8px; }
+  .topbar a { color: var(--white); text-decoration: none; display: inline-flex; align-items: center; min-height: 24px; }
+  .topbar a:hover { text-decoration: underline; }
+  .topbar__right { display: flex; gap: 20px; align-items: center; }
+  .lang { display: inline-flex; gap: 8px; align-items: center; }
+  .lang a[aria-current='true'] { text-decoration: underline !important; }
+  .lang a:not([aria-current]) { color: var(--mint-2); }
+  .short { display: none; }
+  @media (max-width: 767px) {
+    .topbar { font-size: 13px; font-weight: 700; text-align: center; }
+    .topbar__in { justify-content: center; padding: 8px 16px; }
+    .topbar__right { display: none; }
+    .full { display: none; }
+    .short { display: inline; }
+  }
+</style>

@@ -1,0 +1,223 @@
+---
+// Google Maps sin API key, con "facade" de clic para cargar (rendimiento + privacidad: no se
+// contacta con Google hasta que la persona lo pide; la elección se recuerda durante la sesión).
+// API:
+//   <MapEmbed places={[{ id: 'pozuelo', name: 'Suki House Pozuelo', query: 'Calle …' }]} height={420} />
+// Con varios lugares muestra pestañas accesibles; con uno solo, no. El idioma sale de Astro.currentLocale.
+import { getLang } from '../i18n';
+
+export interface MapPlace { id: string; name: string; query: string }
+interface Props { places: MapPlace[]; height?: number; class?: string }
+
+const { places, height = 420, class: cls } = Astro.props;
+const lang = getLang(Astro.currentLocale);
+
+const t = {
+  es: {
+    show: 'Ver mapa',
+    loading: 'Cargando mapa…',
+    loaded: 'Mapa cargado',
+    note: 'El mapa se carga desde Google Maps',
+    open: 'Abrir en Google Maps',
+    directions: 'Cómo llegar',
+    newTab: '(se abre en una pestaña nueva)',
+    frameTitle: 'Mapa de {name}',
+    tabs: 'Ubicaciones',
+  },
+  en: {
+    show: 'Show map',
+    loading: 'Loading map…',
+    loaded: 'Map loaded',
+    note: 'The map loads from Google Maps',
+    open: 'Open in Google Maps',
+    directions: 'Get directions',
+    newTab: '(opens in a new tab)',
+    frameTitle: 'Map of {name}',
+    tabs: 'Locations',
+  },
+}[lang];
+
+const uid = `map-${places.map((p) => p.id).join('-')}`;
+const enc = encodeURIComponent;
+const searchUrl = (q: string) => `https://www.google.com/maps/search/?api=1&query=${enc(q)}`;
+const dirUrl = (q: string) => `https://www.google.com/maps/dir/?api=1&destination=${enc(q)}`;
+const multi = places.length > 1;
+---
+<div
+  class:list={['map-embed', cls]}
+  style={`--map-h:${height}px`}
+  data-map-embed
+  data-lang={lang}
+  data-title-tpl={t.frameTitle}
+  data-txt-loading={t.loading}
+  data-txt-loaded={t.loaded}
+  data-places={places.map((p) => p.id).join(' ')}
+>
+  <noscript>
+    <style is:inline>
+      .map-embed__show{display:none!important}
+      .map-embed__tabs{display:none!important}
+      .map-embed__panel[hidden]{display:block!important}
+      .map-embed__panel+.map-embed__panel{margin-top:24px}
+    </style>
+  </noscript>
+
+  {multi && (
+    <div class="map-embed__tabs" role="tablist" aria-label={t.tabs}>
+      {places.map((p, i) => (
+        <button
+          type="button"
+          role="tab"
+          class="map-embed__tab"
+          id={`${uid}-tab-${p.id}`}
+          aria-controls={`${uid}-panel-${p.id}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+          data-place={p.id}
+        >{p.name}</button>
+      ))}
+    </div>
+  )}
+
+  {places.map((p, i) => (
+    <div
+      class="map-embed__panel"
+      id={`${uid}-panel-${p.id}`}
+      role={multi ? 'tabpanel' : undefined}
+      aria-labelledby={multi ? `${uid}-tab-${p.id}` : undefined}
+      hidden={i > 0}
+      data-place={p.id}
+      data-name={p.name}
+      data-query={p.query}
+    >
+      <div class="map-embed__stage" data-state="idle">
+        <div class="map-embed__facade">
+          <div class="map-embed__card">
+            <svg class="map-embed__pin" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z" />
+              <circle cx="12" cy="9.5" r="2.5" />
+            </svg>
+            <p class="map-embed__name">{p.name}</p>
+            <p class="map-embed__addr">{p.query}</p>
+            <p class="map-embed__note">{t.note}</p>
+            <button type="button" class="btn btn--primary map-embed__show" data-label={t.show}>{t.show}</button>
+            <noscript>
+              <a class="btn btn--primary" href={searchUrl(p.query)} target="_blank" rel="noopener">{t.open}<span class="visually-hidden"> {t.newTab}</span></a>
+            </noscript>
+          </div>
+        </div>
+      </div>
+      <div class="map-embed__links">
+        <a class="btn btn--primary" href={dirUrl(p.query)} target="_blank" rel="noopener">{t.directions}<span class="visually-hidden"> {t.newTab}</span></a>
+        <a class="btn btn--outline" href={searchUrl(p.query)} target="_blank" rel="noopener">{t.open}<span class="visually-hidden"> {t.newTab}</span></a>
+      </div>
+    </div>
+  ))}
+
+  <p class="visually-hidden" role="status" aria-live="polite" data-status></p>
+</div>
+
+<script>
+  import '../scripts/map';
+</script>
+
+<style>
+  .map-embed { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+  /* ---- Pestañas ---- */
+  .map-embed__tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .map-embed__tab {
+    min-height: 44px;
+    padding: 8px 20px;
+    border-radius: var(--pill);
+    border: 2px solid var(--card-border);
+    background: var(--white);
+    color: var(--ink);
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-fast) var(--ease-out),
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .map-embed__tab:hover { border-color: var(--teal); }
+  .map-embed__tab[aria-selected='true'] { background: var(--ink); border-color: var(--ink); color: var(--white); }
+
+  .map-embed__panel { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .map-embed__panel[hidden] { display: none; }
+
+  /* ---- Caja con altura fija (sin saltos de maquetación) ---- */
+  .map-embed__stage {
+    position: relative;
+    height: var(--map-h);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    background-color: var(--mint);
+    background-image:
+      linear-gradient(var(--map-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--map-grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+  }
+  .map-embed__stage :global(.map-embed__frame) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    opacity: 0;
+    transition: opacity var(--dur-slow) var(--ease-out);
+  }
+  .map-embed__stage[data-state='ready'] :global(.map-embed__frame) { opacity: 1; }
+
+  /* ---- Facade ---- */
+  .map-embed__facade {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 1;
+    transition: opacity var(--dur-med) var(--ease-out), visibility 0s linear 0s;
+  }
+  .map-embed__stage[data-state='ready'] .map-embed__facade {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--dur-med) var(--ease-out), visibility 0s linear var(--dur-med);
+  }
+  .map-embed__card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 24px 28px;
+    max-width: 380px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    box-shadow: var(--shadow-card);
+  }
+  .map-embed__pin { color: var(--cta); margin-bottom: 2px; }
+  .map-embed__name { font-weight: 900; font-size: 20px; line-height: 1.2; color: var(--ink); }
+  .map-embed__addr { font-size: 15px; color: var(--text-2); }
+  .map-embed__note { font-size: 14px; color: var(--muted); margin-bottom: 10px; }
+  .map-embed__show[disabled] { cursor: progress; opacity: 0.85; }
+
+  /* ---- Enlaces ---- */
+  .map-embed__links { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  @media (max-width: 767px) {
+    .map-embed__stage { height: min(var(--map-h), 320px); border-radius: var(--radius-lg); }
+    .map-embed__card { padding: 18px 20px; }
+    .map-embed__name { font-size: 18px; }
+    .map-embed__links .btn { flex: 1 1 auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .map-embed__stage :global(.map-embed__frame),
+    .map-embed__facade,
+    .map-embed__tab { transition: none; }
+  }
+</style>

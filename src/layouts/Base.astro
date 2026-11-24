@@ -1,0 +1,52 @@
+---
+import '../styles/global.css';
+import nunitoWoff2 from '@fontsource-variable/nunito/files/nunito-latin-wght-normal.woff2?url';
+import type { ImageMetadata } from 'astro';
+import type { NavKey } from '../data/site';
+import { getLang, HTML_LANG } from '../i18n';
+import Seo from '../components/Seo.astro';
+import TopBar from '../components/TopBar.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import MobileBookBar from '../components/MobileBookBar.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  current?: NavKey;
+  footer?: 'full' | 'compact';
+  noindex?: boolean;
+  jsonLd?: object | object[];
+  ogImage?: ImageMetadata;
+  showMobileBar?: boolean;
+  bookHref?: string;
+}
+const { title, description, path, current, footer = 'full', noindex, jsonLd, ogImage, showMobileBar = true, bookHref } = Astro.props;
+const lang = getLang(Astro.currentLocale);
+const t = { es: { skip: 'Saltar al contenido' }, en: { skip: 'Skip to content' } }[lang];
+---
+<!doctype html>
+<html lang={HTML_LANG[lang]}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={nunitoWoff2} as="font" type="font/woff2" crossorigin />
+    <Seo {title} {description} {path} image={ogImage} {noindex} {jsonLd} {lang} />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body class:list={{ 'has-bar': showMobileBar }}>
+    <a class="skip-link" href="#main">{t.skip}</a>
+    <TopBar />
+    <Header {current} bookHref={bookHref} />
+    <main id="main"><slot /></main>
+    <Footer variant={footer} />
+    {showMobileBar && <MobileBookBar href={bookHref} />}
+    <script>import '../scripts/motion';</script>
+  </body>
+</html>
+<style is:global>
+  @media (max-width: 767px) {
+    body.has-bar { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  }
+</style>

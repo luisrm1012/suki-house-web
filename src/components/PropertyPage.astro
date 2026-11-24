@@ -1,0 +1,296 @@
+---
+// Página de habitaciones de un alojamiento (Pozuelo, Vallarta…).
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Base from '../layouts/Base.astro';
+import RoomCard from './RoomCard.astro';
+import RatingBadge from './RatingBadge.astro';
+import MapEmbed from './MapEmbed.astro';
+import { getLang, getData, localizePath } from '../i18n';
+import type { Property, Rating, Room, RoomTag, NavKey } from '../data/site';
+
+interface GalleryItem { img: ImageMetadata; alt: string }
+interface Props {
+  property: Property;
+  path: string;
+  current: NavKey;
+  title: string;
+  description: string;
+  kicker: string;
+  rooms: Room[];
+  filters: { label: string; tag: RoomTag | 'todas' }[];
+  included: string[];
+  amenityFeatures: string[];
+  hero: GalleryItem;
+  /** 4 fotos pequeñas; la última lleva el botón "Ver todas las fotos". */
+  gallery: [GalleryItem, GalleryItem, GalleryItem, GalleryItem];
+  ratings?: Rating[];
+}
+const { property: p, path, current, title, description, kicker, rooms, filters, included, amenityFeatures, hero, gallery: galleryItems, ratings = [] } = Astro.props;
+const lang = getLang(Astro.currentLocale);
+const { site, guestOptions } = getData(lang);
+const t = {
+  es: {
+    home: 'Inicio', route: 'Ruta', rooms: 'habitaciones', room: 'habitación', checkin: 'Llegada', checkout: 'Salida',
+    guests: 'Huéspedes', cta: 'Ver precios y disponibilidad', perks: `Mejor precio garantizado · Reserva directa, sin intermediarios · Check-in desde las ${site.checkIn}`,
+    filterRooms: 'Filtrar habitaciones', allPhotos: 'Ver todas las fotos', included: 'Incluido en todas las habitaciones', location: 'Ubicación',
+  },
+  en: {
+    home: 'Home', route: 'Breadcrumb', rooms: 'rooms', room: 'room', checkin: 'Check-in', checkout: 'Check-out',
+    guests: 'Guests', cta: 'Check prices & availability', perks: `Best price guaranteed · Book direct, no middlemen · Check-in from ${site.checkIn}`,
+    filterRooms: 'Filter rooms', allPhotos: 'See all photos', included: 'Included in every room', location: 'Location',
+  },
+}[lang];
+const abs = (u: string) => new URL(u, Astro.site).href;
+const url = (u: string) => abs(localizePath(u, lang));
+
+const address: Record<string, string> = {
+  '@type': 'PostalAddress',
+  streetAddress: p.street,
+  addressLocality: p.locality,
+  addressRegion: p.region,
+  addressCountry: 'ES',
+};
+if (p.postalCode) address.postalCode = p.postalCode;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t.home, item: url('/') },
+      { '@type': 'ListItem', position: 2, name: p.name, item: abs(path) },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'LodgingBusiness',
+    name: p.name,
+    url: abs(path),
+    image: abs(hero.img.src),
+    description,
+    telephone: site.phones[0].e164,
+    email: site.email,
+    address,
+    numberOfRooms: p.rooms,
+    priceRange: '€€',
+    checkinTime: site.checkIn,
+    checkoutTime: site.checkOut,
+    amenityFeature: amenityFeatures.map((a) => ({ '@type': 'LocationFeatureSpecification', name: a, value: true })),
+    containsPlace: rooms.map((r) => ({ '@type': 'HotelRoom', name: r.name, description: r.description })),
+  },
+];
+
+const sizesBig = '(min-width: 1000px) 600px, (min-width: 768px) 50vw, 100vw';
+const sizesSmall = '(min-width: 1000px) 290px, (min-width: 768px) 25vw, 50vw';
+const gallery = galleryItems.map((g, i) => ({ ...g, cls: `g${i + 2}` }));
+---
+<Base {title} {description} {path} {current} footer="compact" bookHref="#disponibilidad" {jsonLd}>
+  <section class="top container">
+    <nav class="crumbs enter" style="--i:0" aria-label={t.route}>
+      <a href={localizePath('/', lang)}>{t.home}</a><span aria-hidden="true">/</span><span aria-current="page">{p.name}</span>
+    </nav>
+    <div class="title-row">
+      <div class="title enter" style="--i:1">
+        <p class="kicker">{kicker}</p>
+        <h1>{p.name}</h1>
+        <p class="addr">{p.addressLines[0]} · {p.addressLines[1]} · {p.rooms} {t.rooms}</p>
+      </div>
+      {ratings.length > 0 && (
+        <div class="ratings enter" style="--i:2">
+          {ratings.map((r) => <RatingBadge rating={r} variant="mint" />)}
+        </div>
+      )}
+    </div>
+
+    <div class="gallery">
+      <div class="g g1 enter-photo">
+        <Picture src={hero.img} formats={['avif', 'webp']} widths={[320, 480, 640, 722]} sizes={sizesBig} width={722} height={480} fit="cover" quality={60} loading="eager" fetchpriority="high" decoding="async" alt={hero.alt} />
+      </div>
+      {gallery.map((g, i) => (
+        <div class={`g ${g.cls} enter`} style={`--i:${i + 2}`}>
+          <Picture src={g.img} formats={['avif', 'webp']} widths={[320, 480, 640, 722]} sizes={sizesSmall} width={722} height={520} fit="cover" quality={60} loading="lazy" decoding="async" alt={g.alt} />
+          {g.cls === 'g5' && <a class="all-photos" href="#">{t.allPhotos}</a>}
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section id="disponibilidad" class="avail container enter" style="--i:5">
+    <!-- Placeholder del motor de reservas: method/action se conectarán al motor real. -->
+    <form method="get" action="#">
+      <div class="field">
+        <label for="a-in">{t.checkin}</label>
+        <input id="a-in" name="llegada" type="date" />
+      </div>
+      <div class="field">
+        <label for="a-out">{t.checkout}</label>
+        <input id="a-out" name="salida" type="date" />
+      </div>
+      <div class="field">
+        <label for="a-pax">{t.guests}</label>
+        <select id="a-pax" name="huespedes">
+          {guestOptions.map((o, i) => <option value={i + 1} selected={i === 1}>{o}</option>)}
+        </select>
+      </div>
+      <button type="submit">{t.cta}</button>
+      <p class="perks">{t.perks}</p>
+    </form>
+  </section>
+
+  <section id="habitaciones" class="rooms container">
+    <div class="rooms-head">
+      <div aria-live="polite" aria-atomic="true">
+        <h2 id="rooms-count" data-total={rooms.length} data-one={t.room} data-many={t.rooms}>{rooms.length} {t.rooms}</h2>
+      </div>
+      <div class="filters" role="group" aria-label={t.filterRooms}>
+        {filters.map((f, i) => (
+          <button type="button" data-filter={f.tag} aria-pressed={i === 0 ? 'true' : 'false'}>{f.label}</button>
+        ))}
+      </div>
+    </div>
+    <div class="room-list" id="room-list">
+      {rooms.map((r) => <RoomCard room={r} variant="row" headingLevel={3} bookHref="#disponibilidad" />)}
+    </div>
+  </section>
+
+  <section id="ubicacion" class="location container">
+    <h2>{t.location}</h2>
+    <p class="addr">{p.addressLines[0]} · {p.addressLines[1]}</p>
+    <div class="map-wrap">
+      <MapEmbed places={[{ id: p.id, name: p.name, query: p.mapQuery }]} height={400} />
+    </div>
+  </section>
+
+  <section class="section section--mint included">
+    <div class="container inc">
+      <h2>{t.included}</h2>
+      <ul>
+        {included.map((i) => <li>{i}</li>)}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const list = document.getElementById('room-list');
+  const heading = document.getElementById('rooms-count');
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filters button');
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.filter ?? 'todas';
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      let n = 0;
+      list?.querySelectorAll<HTMLElement>('article[data-tags]').forEach((a) => {
+        const show = tag === 'todas' || (a.dataset.tags ?? '').split(' ').includes(tag);
+        a.hidden = !show;
+        // el filtro toma el control de la animación (anula la aparición por scroll)
+        a.removeAttribute('data-reveal');
+        a.classList.remove('is-in');
+        if (show) {
+          // entrada suave y escalonada de las habitaciones visibles
+          if (!reduce) a.animate(
+            [{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }],
+            { duration: 480, delay: n * 60, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'backwards' },
+          );
+          n++;
+        }
+      });
+      if (heading) {
+        heading.textContent = `${n} ${n === 1 ? heading.dataset.one : heading.dataset.many}`;
+        if (!reduce) heading.animate([{ opacity: 0.2 }, { opacity: 1 }], { duration: 360, easing: 'ease-out' });
+      }
+    });
+  });
+</script>
+
+<style>
+  .top { padding-top: 32px; display: flex; flex-direction: column; gap: 24px; }
+  .crumbs { font-size: 14px; font-weight: 700; display: flex; gap: 8px; color: var(--muted); }
+  .crumbs a { display: inline-flex; align-items: center; min-height: 44px; margin-block: -14px; }
+  .title-row { display: flex; flex-wrap: wrap; gap: 16px 40px; align-items: flex-end; justify-content: space-between; }
+  .title { display: flex; flex-direction: column; gap: 8px; }
+  h1 { font-size: clamp(34px, 4vw, 52px); line-height: 1.05; }
+  .addr { color: var(--muted); }
+  .ratings { display: flex; flex-wrap: wrap; gap: 12px; }
+
+  .gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 194px 194px; gap: 12px; }
+  .g { position: relative; overflow: hidden; border-radius: var(--radius-lg); min-width: 0; }
+  .g :global(picture), .g :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .g :global(img) { transition: transform 900ms var(--ease-out), opacity 700ms var(--ease-out); }
+  @media (hover: hover) { .g:hover :global(img) { transform: scale(1.045); } }
+  .all-photos { transition: background-color var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out); }
+  .all-photos:hover { transform: translateY(-2px); }
+  .g1 { grid-row: 1 / 3; grid-column: 1; }
+  .g2 { grid-column: 2; grid-row: 1; }
+  .g3 { grid-column: 2; grid-row: 2; }
+  .g4 { grid-column: 3; grid-row: 1; }
+  .g5 { grid-column: 3; grid-row: 2; }
+  .all-photos {
+    position: absolute; right: 12px; bottom: 12px; display: inline-flex; align-items: center; min-height: 44px;
+    background: var(--white); color: var(--ink); text-decoration: none; font-weight: 800; font-size: 14px;
+    padding: 0 14px; border-radius: var(--pill);
+  }
+  .all-photos:hover { background: var(--mint); color: var(--ink); }
+  @media (max-width: 899px) {
+    .gallery { grid-template-columns: 1fr 1fr; grid-template-rows: 260px 150px 150px; }
+    .g1 { grid-column: 1 / 3; grid-row: 1; }
+    .g2 { grid-column: 1; grid-row: 2; }
+    .g3 { grid-column: 2; grid-row: 2; }
+    .g4 { grid-column: 1; grid-row: 3; }
+    .g5 { grid-column: 2; grid-row: 3; }
+  }
+  @media (max-width: 767px) {
+    .top { padding-top: 20px; gap: 18px; }
+    .gallery { grid-template-rows: 220px 130px 130px; gap: 8px; }
+    .g { border-radius: var(--radius-sm); }
+    .all-photos { right: 8px; bottom: 8px; padding: 0 10px; font-size: 13px; }
+  }
+
+  .avail { padding-top: 28px; }
+  form { background: var(--ink); border-radius: 20px; padding: 18px 20px; display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; }
+  .field { flex: 1 1 160px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  label { font-size: 13px; font-weight: 800; color: var(--white); text-transform: uppercase; letter-spacing: 0.04em; }
+  input, select { height: 48px; width: 100%; border: 0; border-radius: var(--radius-sm); padding: 0 12px; color: var(--ink); background: var(--white); }
+  button[type='submit'] {
+    flex: 1 1 200px; min-height: 48px; border: 0; border-radius: var(--radius-sm); background: var(--cta); color: var(--white);
+    font-weight: 800; font-size: 17px; cursor: pointer; transition: background-color var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out), box-shadow var(--dur-med) var(--ease-out);
+  }
+  button[type='submit']:hover { background: #9E3D26; box-shadow: 0 10px 24px rgba(184, 73, 47, 0.35); transform: translateY(-1px); }
+  button[type='submit']:active, .filters button:active { transform: scale(0.97); }
+  form :focus-visible { outline-color: var(--white); }
+  .perks { flex: 1 1 100%; font-size: 14px; font-weight: 700; color: var(--mint-2); }
+  @media (max-width: 767px) {
+    form { padding: 16px; }
+    .field, button[type='submit'] { flex-basis: 100%; }
+  }
+
+  .rooms { padding-top: 56px; padding-bottom: 72px; display: flex; flex-direction: column; gap: 24px; }
+  .rooms-head { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; justify-content: space-between; }
+  h2 { font-size: 34px; line-height: 1.1; }
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; }
+  .filters button {
+    min-height: 44px; padding: 0 18px; border-radius: var(--pill); border: 2px solid var(--field-border);
+    background: var(--white); color: var(--ink); font-size: 15px; font-weight: 800; cursor: pointer;
+    transition: background-color var(--dur-med) var(--ease-out), border-color var(--dur-med) var(--ease-out), color var(--dur-med) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+  }
+  .filters button:hover { border-color: var(--ink); }
+  .filters button[aria-pressed='true'] { border-color: var(--ink); background: var(--ink); color: var(--white); }
+  .room-list { display: flex; flex-direction: column; gap: 24px; }
+  .room-list :global(article[hidden]) { display: none; }
+  @media (max-width: 767px) {
+    .rooms { padding-top: 36px; padding-bottom: 40px; }
+    h2 { font-size: 28px; }
+  }
+
+  .location { padding-bottom: 72px; display: flex; flex-direction: column; gap: 16px; }
+  .map-wrap { border-radius: var(--radius-lg); overflow: hidden; }
+  @media (max-width: 767px) { .location { padding-bottom: 40px; } }
+
+  .inc { display: flex; flex-direction: column; gap: 28px; }
+  .inc h2 { font-size: 30px; line-height: 1.15; }
+  .inc ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 16px; font-weight: 700; color: var(--ink); }
+  .inc li { flex: 1 1 200px; background: var(--white); border-radius: 16px; padding: 18px 20px; }
+  @media (max-width: 767px) { .inc h2 { font-size: 26px; } }
+</style>

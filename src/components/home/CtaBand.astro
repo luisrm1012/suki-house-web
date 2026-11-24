@@ -1,0 +1,70 @@
+---
+import { Picture } from 'astro:assets';
+import { images } from '../../data/site';
+import { getLang, getData } from '../../i18n';
+
+const lang = getLang(Astro.currentLocale);
+const { site } = getData(lang);
+const t = {
+  es: {
+    title: '¿Te guardamos habitación?',
+    lead: 'Reserva en dos minutos o escríbenos por WhatsApp y te ayudamos a elegir.',
+    book: 'Reservar ahora',
+    alt: 'Banco de madera junto a la entrada de la casa',
+  },
+  en: {
+    title: 'Shall we save you a room?',
+    lead: 'Book in two minutes or message us on WhatsApp and we will help you choose.',
+    book: 'Book now',
+    alt: 'Wooden bench by the front door of the house',
+  },
+}[lang];
+---
+<section id="contacto" class="cta-sec" aria-labelledby="contacto-title">
+  <div class="container">
+    <div class="band">
+      <div class="text">
+        <h2 id="contacto-title" class="title">{t.title}</h2>
+        <p class="lead">{t.lead}</p>
+        <div class="actions">
+          <a class="btn btn--cta btn--lg" href="#reservar">{t.book}</a>
+          <a class="btn btn--white btn--lg wa" href={site.whatsapp.href}>{site.whatsapp.label}</a>
+        </div>
+      </div>
+      <div class="media zoom">
+        <Picture
+          src={images.bancoEntrada}
+          formats={['avif', 'webp']}
+          widths={[320, 480, 640, 722]}
+          sizes="(min-width: 1200px) 526px, (min-width: 868px) 45vw, 100vw"
+          quality={60}
+          loading="lazy"
+          decoding="async"
+          alt={t.alt}
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta-sec { background: var(--white); padding-block: 72px; }
+  .band { background: var(--cta-band); border-radius: var(--radius-xl); overflow: hidden; display: flex; flex-wrap: wrap; align-items: stretch; }
+  .text { flex: 1 1 460px; min-width: 0; padding: 48px; display: flex; flex-direction: column; gap: 16px; justify-content: center; color: var(--cta-band-ink); }
+  .title { color: var(--cta-band-ink); font-size: clamp(28px, 3vw, 40px); line-height: 1.1; }
+  .lead { font-size: 18px; font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+  .wa { padding-inline: 24px; }
+  .media { flex: 1 1 360px; min-width: 0; min-height: 320px; position: relative; }
+  .media :global(picture) { position: absolute; inset: 0; }
+  .media :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+  @media (max-width: 767px) {
+    .cta-sec { padding-block: var(--section-y); }
+    .band { border-radius: 22px; }
+    .text { flex-basis: 100%; padding: 28px 20px; gap: 12px; }
+    .lead { font-size: 17px; }
+    .actions .btn { flex: 1 1 100%; font-size: 17px; }
+    .media { flex-basis: 100%; min-height: 220px; }
+  }
+</style>

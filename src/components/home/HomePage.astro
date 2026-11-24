@@ -1,0 +1,241 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import RatingBadge from '../RatingBadge.astro';
+import RoomCard from '../RoomCard.astro';
+import BookingForm from './BookingForm.astro';
+import AmenitiesStrip from './AmenitiesStrip.astro';
+import PropertyCard from './PropertyCard.astro';
+import HomeExtras from './HomeExtras.astro';
+import Testimonials from './Testimonials.astro';
+import LocationSection from './LocationSection.astro';
+import BeforeBooking from './BeforeBooking.astro';
+import CtaBand from './CtaBand.astro';
+import { images } from '../../data/site';
+import { getLang, getData, localizePath } from '../../i18n';
+
+const lang = getLang(Astro.currentLocale);
+const d = getData(lang);
+const { properties, pozueloRooms, ratings, site } = d;
+
+const T = {
+  es: {
+    title: 'Suki House · Habitaciones con cocina en Madrid y Pozuelo',
+    description:
+      'Habitaciones dobles y familiares con cocina equipada en Pozuelo de Alarcón y San Blas–Canillejas, Madrid. Reserva directa al mejor precio garantizado.',
+    bookAria: 'Reserva',
+    h1: 'Tu casa en Madrid, tranquila y bien conectada',
+    lead: 'Habitaciones dobles y familiares con cocina equipada y zonas comunes en dos casas acogedoras: Pozuelo de Alarcón y San Blas–Canillejas.',
+    heroAlt: 'Entrada de Suki House en Pozuelo, con la puerta abierta y fachada de ladrillo',
+    pickKicker: 'dos casas, un mismo estilo',
+    pickTitle: 'Elige tu Suki House',
+    pickSub: 'Calma residencial junto al tren en Pozuelo, o conexión rápida con IFEMA y el aeropuerto en Madrid.',
+    roomsKicker: 'las más reservadas',
+    roomsTitle: 'Habitaciones para cada plan',
+    allRooms: 'Ver las 7 habitaciones de Pozuelo',
+    feat1: 'WiFi gratis',
+    feat2: 'Cocina equipada compartida',
+    feat3: 'Jardín y terraza',
+  },
+  en: {
+    title: 'Suki House · Rooms with a kitchen in Madrid & Pozuelo',
+    description:
+      'Double and family rooms with a fully equipped kitchen in Pozuelo de Alarcón and San Blas–Canillejas, Madrid. Book direct for the best price guaranteed.',
+    bookAria: 'Booking',
+    h1: 'Your home in Madrid, calm and well connected',
+    lead: 'Double and family rooms with a fully equipped kitchen and shared areas in two welcoming houses: Pozuelo de Alarcón and San Blas–Canillejas.',
+    heroAlt: 'Suki House entrance in Pozuelo, with the front door open and a brick facade',
+    pickKicker: 'two houses, one style',
+    pickTitle: 'Choose your Suki House',
+    pickSub: 'Quiet residential calm by the train in Pozuelo, or quick links to IFEMA and the airport in Madrid.',
+    roomsKicker: 'most booked',
+    roomsTitle: 'Rooms for every plan',
+    allRooms: 'See all 7 rooms in Pozuelo',
+    feat1: 'Free WiFi',
+    feat2: 'Shared fully equipped kitchen',
+    feat3: 'Garden and terrace',
+  },
+}[lang];
+const { title, description } = T;
+
+
+const featuredRooms = pozueloRooms.filter((r) => r.featured);
+
+// ---------- JSON-LD ----------
+// Sin aggregateRating: el diseño solo da puntuaciones por categoría, no una
+// valoración global con número de reseñas verificable.
+const abs = (path: string) => new URL(localizePath(path, lang), Astro.site).href;
+const homeUrl = abs('/');
+
+const amenity = (name: string) => ({ '@type': 'LocationFeatureSpecification', name, value: true });
+
+const lodging = await Promise.all(
+  properties.map(async (p) => {
+    const img = await getImage({ src: p.image, width: 722, format: 'jpg' });
+    const features = [amenity(T.feat1), amenity(T.feat2)];
+    if (p.id === 'pozuelo') features.push(amenity(T.feat3));
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'LodgingBusiness',
+      '@id': `${homeUrl}#${p.id}`,
+      name: p.name,
+      url: p.href.startsWith('/') ? abs(p.href) : homeUrl,
+      image: abs(img.src),
+      telephone: site.phones[0].e164,
+      email: site.email,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: p.street,
+        ...(p.postalCode ? { postalCode: p.postalCode } : {}),
+        addressLocality: p.locality,
+        addressRegion: p.region,
+        addressCountry: 'ES',
+      },
+      numberOfRooms: p.rooms,
+      priceRange: '€€',
+      checkinTime: site.checkIn,
+      checkoutTime: site.checkOut,
+      amenityFeature: features,
+    };
+  }),
+);
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': `${homeUrl}#website`,
+    name: site.name,
+    url: homeUrl,
+    inLanguage: lang,
+    description: site.description,
+  },
+  ...lodging,
+];
+---
+<Base {title} {description} path="/" {jsonLd}>
+  <div class="home">
+    <!-- Hero + reserva -->
+    <section id="reservar" class="hero" aria-label={T.bookAria}>
+      <div class="container hero__in">
+        <div class="hero__text">
+          <p class="kicker hero__kicker enter" style="--i:0">{site.handTagline}</p>
+          <h1 class="hero__title enter" style="--i:1">{T.h1}</h1>
+          <p class="hero__lead enter" style="--i:2">{T.lead}</p>
+          <div class="hero__photo enter-photo">
+            <Picture
+              src={images.entrada}
+              formats={['avif', 'webp']}
+              widths={[320, 480, 640, 722]}
+              sizes="(min-width: 1200px) 582px, (min-width: 1076px) 50vw, 100vw"
+              width={722}
+              height={430}
+              fit="cover"
+              quality={60}
+              loading="eager"
+              fetchpriority="high"
+              alt={T.heroAlt}
+            />
+            <div class="hero__badge enter" style="--i:6"><RatingBadge rating={ratings[0]} variant="photo" /></div>
+          </div>
+        </div>
+        <div class="hero__form enter" style="--i:3">
+          <BookingForm />
+        </div>
+      </div>
+    </section>
+
+    <AmenitiesStrip />
+
+    <!-- Elige tu Suki House -->
+    <section id="alojamientos" class="section" aria-labelledby="alojamientos-title">
+      <div class="container stack">
+        <div class="section-head">
+          <p class="kicker">{T.pickKicker}</p>
+          <h2 id="alojamientos-title" class="h2">{T.pickTitle}</h2>
+          <p class="sub">{T.pickSub}</p>
+        </div>
+        <div class="props">
+          {properties.map((p) => <PropertyCard property={p} />)}
+        </div>
+      </div>
+    </section>
+
+    <!-- Habitaciones destacadas -->
+    <section class="section section--mint" aria-labelledby="habitaciones-title">
+      <div class="container stack">
+        <div class="rooms-head">
+          <div class="section-head">
+            <p class="kicker">{T.roomsKicker}</p>
+            <h2 id="habitaciones-title" class="h2">{T.roomsTitle}</h2>
+          </div>
+          <a class="all-link" href={localizePath('/pozuelo', lang)}>{T.allRooms}</a>
+        </div>
+        <div class="rooms">
+          {featuredRooms.map((r) => (
+            <div class="rooms__item"><RoomCard room={r} variant="compact" /></div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <HomeExtras />
+    <Testimonials />
+    <LocationSection />
+    <BeforeBooking />
+    <CtaBand />
+  </div>
+</Base>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero { background: var(--white); }
+  .hero__in { padding-block: 56px 72px; display: flex; flex-wrap: wrap; gap: 48px; align-items: center; }
+  .hero__text { flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+  .hero__kicker { font-size: 34px; }
+  .hero__title { font-size: clamp(38px, 4.6vw, 62px); line-height: 1.05; letter-spacing: -0.01em; }
+  .hero__lead { font-size: 19px; max-width: 560px; color: var(--text-2); }
+  .hero__photo { position: relative; margin-top: 12px; height: 340px; border-radius: var(--radius-xl); overflow: hidden; }
+  .hero__photo :global(picture), .hero__photo :global(img) { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .hero__badge { position: absolute; left: 20px; bottom: 20px; }
+  .hero__form { flex: 1 1 460px; min-width: 0; }
+
+  /* ---------- Secciones ---------- */
+  .stack { display: flex; flex-direction: column; gap: 40px; }
+  .sub { color: var(--muted); }
+  .props { display: flex; flex-wrap: wrap; gap: 32px; }
+
+  .rooms-head { display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: flex-end; justify-content: space-between; }
+  .all-link { display: inline-flex; align-items: center; min-height: 44px; padding: 12px 0; font-weight: 800; }
+  .rooms { display: flex; flex-wrap: wrap; gap: 28px; }
+  /* 290px (diseño: 320) para que a 1024 sigan cabiendo las 3 en fila */
+  .rooms__item { flex: 1 1 290px; min-width: 0; display: flex; }
+  .rooms__item > :global(*) { flex: 1 1 auto; }
+
+  @media (max-width: 1075px) {
+    .hero__in { gap: 32px; }
+  }
+
+  @media (max-width: 767px) {
+    .hero__in { padding-block: 24px 32px; gap: 14px; }
+    .hero__text { gap: 14px; }
+    .hero__kicker { font-size: 26px; }
+    .hero__title { font-size: 36px; line-height: 1.08; letter-spacing: 0; }
+    .hero__lead { font-size: 16px; }
+    .hero__photo { margin-top: 2px; height: 220px; border-radius: 20px; }
+    .hero__badge { left: 12px; bottom: 12px; }
+
+    .stack { gap: 20px; }
+    .props { gap: 16px; }
+    .rooms { gap: 16px; }
+    .rooms-head { gap: 8px; }
+  }
+</style>
+
+<style is:global>
+  /* Ajustes de títulos del Home en móvil (diseño 390px) */
+  @media (max-width: 767px) {
+    .home .kicker:not(.hero__kicker) { font-size: 24px; }
+    .home .h2 { font-size: 28px; }
+  }
+</style>

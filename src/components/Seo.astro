@@ -1,0 +1,55 @@
+---
+import { getImage } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { images } from '../data/site';
+import { getLang, getData, localizePath, alternates, withBase, OG_LOCALE, type Lang } from '../i18n';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  image?: ImageMetadata;
+  imageAlt?: string;
+  noindex?: boolean;
+  jsonLd?: object | object[];
+  lang?: Lang;
+}
+const { title, description, path, image = images.entrada, imageAlt, noindex, jsonLd } = Astro.props;
+const lang = Astro.props.lang ?? getLang(Astro.currentLocale);
+const { site } = getData(lang);
+// canonical = la propia página (idempotente si path ya trae /en)
+const canonical = new URL(localizePath(path, lang), Astro.site).href;
+// hreflang solo en páginas indexables (la 404 no lleva alternates)
+const alts = noindex ? null : alternates(path);
+const altHref = alts && { es: new URL(alts.es, Astro.site).href, en: new URL(alts.en, Astro.site).href };
+const otherLocale = OG_LOCALE[lang === 'es' ? 'en' : 'es'];
+const og = await getImage({ src: image, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const ogUrl = new URL(og.src, Astro.site).href;
+const ldList = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const alt = imageAlt ?? `${site.name} · ${site.tagline}`;
+---
+<title>{title}</title>
+<meta name="description" content={description} />
+{!noindex && <link rel="canonical" href={canonical} />}
+<meta name="robots" content={noindex ? 'noindex,follow' : 'index,follow'} />
+{altHref && <link rel="alternate" hreflang="es" href={altHref.es} />}
+{altHref && <link rel="alternate" hreflang="en" href={altHref.en} />}
+{altHref && <link rel="alternate" hreflang="x-default" href={altHref.es} />}
+<meta property="og:type" content="website" />
+<meta property="og:locale" content={OG_LOCALE[lang]} />
+{!noindex && <meta property="og:locale:alternate" content={otherLocale} />}
+<meta property="og:site_name" content={site.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={alt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogUrl} />
+<meta name="theme-color" content="#143F3E" />
+<link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+{ldList.map((x) => <script type="application/ld+json" set:html={JSON.stringify(x)} />)}

@@ -1,0 +1,44 @@
+---
+import { getLang, getData } from '../../i18n';
+
+const lang = getLang(Astro.currentLocale);
+const { beforeBooking } = getData(lang);
+const t = {
+  es: { title: 'Antes de reservar' },
+  en: { title: 'Before you book' },
+}[lang];
+---
+<section class="section section--mint before" aria-labelledby="antes-title">
+  <div class="container stack">
+    <h2 id="antes-title" class="title">{t.title}</h2>
+    <dl class="grid">
+      {beforeBooking.map((b) => (
+        <div class="card">
+          <dt class="label">{b.label}</dt>
+          <dd class="value">{b.title}</dd>
+          <dd class="note">{b.note}</dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>
+
+<style>
+  .before { padding-block: 64px; }
+  .stack { display: flex; flex-direction: column; gap: 28px; }
+  .title { font-size: 30px; line-height: 1.15; }
+  .grid { display: flex; flex-wrap: wrap; gap: 20px; }
+  .card { flex: 1 1 220px; background: var(--white); border-radius: 18px; padding: 22px; }
+  .label { font-size: 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--teal); }
+  .value { font-size: 22px; font-weight: 900; color: var(--ink); line-height: 1.35; }
+  .note { font-size: 15px; color: var(--muted); }
+
+  @media (max-width: 767px) {
+    .before { padding-block: var(--section-y); }
+    .stack { gap: 20px; }
+    .title { font-size: 26px; }
+    .grid { gap: 12px; }
+    .card { flex-basis: 100%; padding: 18px; }
+    .value { font-size: 20px; }
+  }
+</style>
