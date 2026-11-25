@@ -54,7 +54,7 @@ function init(root: HTMLElement): void {
       iframe = document.createElement('iframe');
       iframe.className = 'map-embed__frame';
       iframe.loading = 'lazy';
-      iframe.referrerPolicy = 'no-referrer-when-downgrade';
+      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
       iframe.allowFullscreen = true;
       iframe.setAttribute('width', '100%');
       iframe.setAttribute('height', '100%');

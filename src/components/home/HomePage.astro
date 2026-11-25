@@ -20,6 +20,8 @@ const priceRange = (id: HouseId) => { const v = getHousePrice(id); return v === 
 const d = getData(lang);
 const { properties, pozueloRooms, ratings, site } = d;
 
+const pozueloCount = properties.find((p) => p.id === 'pozuelo')?.rooms ?? pozueloRooms.length;
+
 const T = {
   es: {
     title: 'Suki House · Habitaciones con cocina en Madrid y Pozuelo',
@@ -34,7 +36,7 @@ const T = {
     pickSub: 'Calma residencial junto al tren en Pozuelo, o conexión rápida con IFEMA y el aeropuerto en Madrid.',
     roomsKicker: 'las más reservadas',
     roomsTitle: 'Habitaciones para cada plan',
-    allRooms: 'Ver las 7 habitaciones de Pozuelo',
+    allRooms: `Ver las ${pozueloCount} habitaciones de Pozuelo`,
     feat1: 'WiFi gratis',
     feat2: 'Cocina equipada compartida',
     feat3: 'Jardín y terraza',
@@ -52,7 +54,7 @@ const T = {
     pickSub: 'Quiet residential calm by the train in Pozuelo, or quick links to IFEMA and the airport in Madrid.',
     roomsKicker: 'most booked',
     roomsTitle: 'Rooms for every plan',
-    allRooms: 'See all 7 rooms in Pozuelo',
+    allRooms: `See all ${pozueloCount} rooms in Pozuelo`,
     feat1: 'Free WiFi',
     feat2: 'Shared fully equipped kitchen',
     feat3: 'Garden and terrace',
@@ -82,7 +84,7 @@ const lodging = await Promise.all(
       '@id': `${homeUrl}#${p.id}`,
       name: p.name,
       url: p.href.startsWith('/') ? abs(p.href) : homeUrl,
-      image: abs(img.src),
+      image: new URL(img.src, Astro.site).href,
       telephone: site.phones[0].e164,
       email: site.email,
       address: {

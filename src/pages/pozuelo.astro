@@ -9,7 +9,7 @@ const property = properties.find((p) => p.id === 'pozuelo')!;
   path="/pozuelo"
   current="alojamientos"
   title="Habitaciones en Suki House Pozuelo · Pozuelo de Alarcón"
-  description="Siete habitaciones dobles y familiares en un chalet con jardín y terraza, a 10 min a pie del tren en Pozuelo de Alarcón. Reserva directa."
+  description={`${property.rooms} habitaciones dobles y familiares en un chalet con jardín y terraza, a 10 min a pie del tren en Pozuelo de Alarcón. Reserva directa.`}
   kicker="calma residencial junto al tren"
   rooms={pozueloRooms}
   filters={roomFilters}

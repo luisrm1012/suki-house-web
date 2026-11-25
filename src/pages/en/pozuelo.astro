@@ -10,7 +10,7 @@ const property = properties.find((p) => p.id === 'pozuelo')!;
   path="/en/pozuelo"
   current="alojamientos"
   title="Rooms at Suki House Pozuelo · Pozuelo de Alarcón, Madrid"
-  description="Seven double and family rooms in a house with garden and terrace, a 10-minute walk from the train in Pozuelo de Alarcón. Book direct."
+  description={`${property.rooms} double and family rooms in a house with garden and terrace, a 10-minute walk from the train in Pozuelo de Alarcón. Book direct.`}
   kicker="quiet residential living by the train"
   rooms={pozueloRooms}
   filters={roomFilters}

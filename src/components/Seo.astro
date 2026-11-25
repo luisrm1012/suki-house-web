@@ -52,4 +52,4 @@ const alt = imageAlt ?? `${site.name} · ${site.tagline}`;
 <meta name="twitter:image" content={ogUrl} />
 <meta name="theme-color" content="#143F3E" />
 <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
-{ldList.map((x) => <script type="application/ld+json" set:html={JSON.stringify(x)} />)}
+{ldList.map((x) => <script type="application/ld+json" set:html={JSON.stringify(x).replace(/</g, '\\u003c')} />)}

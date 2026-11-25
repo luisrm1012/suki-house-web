@@ -6,7 +6,6 @@ export const GET: APIRoute = ({ site }) =>
     [
       'User-agent: *',
       `Allow: ${withBase('/')}`,
-      `Disallow: ${withBase('/404')}`,
       '',
       `Sitemap: ${new URL(withBase('/sitemap-index.xml'), site!)}`,
       '',

@@ -28,7 +28,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       filter: (page) => !page.includes('/404'),
-      i18n: { defaultLocale: 'es', locales: { es: 'es-ES', en: 'en-GB' } },
+      i18n: { defaultLocale: 'es', locales: { es: 'es', en: 'en' } },
     }),
   ],
 });
