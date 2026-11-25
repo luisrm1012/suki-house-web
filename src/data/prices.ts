@@ -10,7 +10,7 @@
  *     - https://www.sukihouse.es/es/booking/room (Pozuelo)
  *     - https://sukihouse-vallarta.amenitiz.io/es/booking/room (Vallarta)
  *  2) Buscar fechas y anotar el mínimo por noche de cada habitación.
- *  3) Editar `from` con punto decimal (p. ej. 48.6); null muestra «[XX] €».
+ *  3) Editar `from` con punto decimal (p. ej. 48.6); null oculta la línea de precio en la web.
  *  4) Actualizar PRICES_UPDATED.
  *  5) npm run build
  *

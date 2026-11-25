@@ -1,6 +1,7 @@
 ---
 import MapEmbed from '../MapEmbed.astro';
 import { getData, getLang } from '../../i18n';
+import { isFilled } from '../../data/placeholders';
 
 const lang = getLang(Astro.currentLocale);
 const d = getData(lang);
@@ -23,19 +24,26 @@ const t = {
         <p class="kicker">{t.kicker}</p>
         <h2 id="ubicacion-title" class="h2">{t.title}</h2>
       </div>
-      {d.properties.map((p) => (
-        <div class="card">
-          <h3 class="name">{p.name}</h3>
-          <dl class="dist">
-            {p.distances.map((x) => (
-              <div class="row">
-                <dt>{x.place}</dt>
-                <dd>{x.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      ))}
+      {d.properties.map((p) => {
+        const dist = p.distances.filter((x) => isFilled(x.value) && isFilled(x.place));
+        return (
+          <div class="card">
+            <h3 class="name">{p.name}</h3>
+            {dist.length > 0 ? (
+              <dl class="dist">
+                {dist.map((x) => (
+                  <div class="row">
+                    <dt>{x.place}</dt>
+                    <dd>{x.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p class="addr">{p.addressLines.filter(Boolean).join(' · ')}</p>
+            )}
+          </div>
+        );
+      })}
     </div>
 
     <div class="map">
@@ -51,6 +59,7 @@ const t = {
   .card { border: 1px solid var(--line); border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 10px; }
   .name { font-size: 20px; line-height: 1.2; }
   .dist { display: flex; flex-direction: column; gap: 8px; }
+  .addr { color: var(--muted); }
   .row { display: flex; justify-content: space-between; gap: 16px; }
   dd { font-weight: 800; color: var(--ink); white-space: nowrap; }
 

@@ -3,6 +3,7 @@ import { Picture } from 'astro:assets';
 import type { Property } from '../../data/site';
 import { getLang, localizePath } from '../../i18n';
 import { getHousePrice, formatPrice } from '../../data/prices';
+import { isFilled } from '../../data/placeholders';
 
 interface Props {
   property: Property;
@@ -10,7 +11,8 @@ interface Props {
 }
 const { property: p, bookHref = '#reservar' } = Astro.props;
 const lang = getLang(Astro.currentLocale);
-const price = formatPrice(getHousePrice(p.id), lang);
+const amount = getHousePrice(p.id);
+const price = amount === null ? null : formatPrice(amount, lang);
 const t = {
   es: { rooms: 'habitaciones', from: 'Desde', night: ' / noche', view: 'Ver habitaciones', viewOf: ' de ', book: 'Reservar', bookIn: ' en ' },
   en: { rooms: 'rooms', from: 'From', night: ' / night', view: 'View rooms', viewOf: ' at ', book: 'Book', bookIn: ' at ' },
@@ -40,11 +42,13 @@ const roomsLabel = `${p.rooms} ${t.rooms}`;
       <h3 class="name">{p.name}</h3>
     </div>
     <ul class="bullets">
-      {p.bullets.map((b) => <li>{b}</li>)}
+      {p.bullets.filter(isFilled).map((b) => <li>{b}</li>)}
     </ul>
-    <p class="summary">{p.summary}</p>
+    {isFilled(p.summary) && <p class="summary">{p.summary}</p>}
     <div class="foot">
-      <p class="price">{t.from} <strong>{price}</strong><span class="per">{t.night}</span></p>
+      {price && (
+        <p class="price">{t.from} <strong>{price}</strong><span class="per">{t.night}</span></p>
+      )}
       <div class="actions">
         <a class="btn btn--outline more" href={localizePath(p.href, lang)}>{t.view}<span class="visually-hidden">{t.viewOf}{p.name}</span></a>
         <a class="btn btn--cta book" href={bookHref}>{t.book}<span class="visually-hidden">{t.bookIn}{p.name}</span></a>
@@ -93,7 +97,7 @@ const roomsLabel = `${p.rooms} ${t.rooms}`;
     padding-top: 12px;
     border-top: 1px solid var(--line);
   }
-  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-left: auto; }
   .more { padding: 12px 20px; }
   .book { padding: 12px 22px; }
 

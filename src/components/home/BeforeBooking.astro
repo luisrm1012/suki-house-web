@@ -1,8 +1,10 @@
 ---
 import { getLang, getData } from '../../i18n';
+import { isFilled } from '../../data/placeholders';
 
 const lang = getLang(Astro.currentLocale);
 const { beforeBooking } = getData(lang);
+const items = beforeBooking.filter((b) => isFilled(b.title) && isFilled(b.note));
 const t = {
   es: { title: 'Antes de reservar' },
   en: { title: 'Before you book' },
@@ -12,7 +14,7 @@ const t = {
   <div class="container stack">
     <h2 id="antes-title" class="title">{t.title}</h2>
     <dl class="grid">
-      {beforeBooking.map((b) => (
+      {items.map((b) => (
         <div class="card">
           <dt class="label">{b.label}</dt>
           <dd class="value">{b.title}</dd>

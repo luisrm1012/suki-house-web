@@ -8,6 +8,7 @@ import RatingBadge from './RatingBadge.astro';
 import MapEmbed from './MapEmbed.astro';
 import { getLang, getData, localizePath } from '../i18n';
 import { getHousePrice, formatPrice, type HouseId } from '../data/prices';
+import { isFilled } from '../data/placeholders';
 import type { Property, Rating, Room, RoomTag, NavKey } from '../data/site';
 
 interface GalleryItem { img: ImageMetadata; alt: string }
@@ -26,9 +27,12 @@ interface Props {
   /** 4 fotos pequeñas; la última lleva el botón "Ver todas las fotos". */
   gallery: [GalleryItem, GalleryItem, GalleryItem, GalleryItem];
   ratings?: Rating[];
+  /** por defecto, la foto principal (hero) */
+  ogImage?: ImageMetadata;
 }
 const { property: p, path, current, title, description, kicker, rooms, filters, included, amenityFeatures, hero, gallery: galleryItems, ratings = [] } = Astro.props;
 const lang = getLang(Astro.currentLocale);
+const og = Astro.props.ogImage ?? hero.img;
 const priceRange = (id: HouseId) => { const v = getHousePrice(id); return v === null ? '€€' : `${lang === 'en' ? 'From' : 'Desde'} ${formatPrice(v, lang)}`; };
 const { site, guestOptions } = getData(lang);
 const t = {
@@ -61,14 +65,14 @@ const jsonLd = [
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: t.home, item: url('/') },
-      { '@type': 'ListItem', position: 2, name: p.name, item: abs(path) },
+      { '@type': 'ListItem', position: 2, name: p.name, item: url(path) },
     ],
   },
   {
     '@context': 'https://schema.org',
     '@type': 'LodgingBusiness',
     name: p.name,
-    url: abs(path),
+    url: url(path),
     image: abs(hero.img.src),
     description,
     telephone: site.phones[0].e164,
@@ -78,8 +82,8 @@ const jsonLd = [
     priceRange: priceRange(p.id),
     checkinTime: site.checkIn,
     checkoutTime: site.checkOut,
-    amenityFeature: amenityFeatures.map((a) => ({ '@type': 'LocationFeatureSpecification', name: a, value: true })),
-    containsPlace: rooms.map((r) => ({ '@type': 'HotelRoom', name: r.name, description: r.description })),
+    amenityFeature: amenityFeatures.filter(isFilled).map((a) => ({ '@type': 'LocationFeatureSpecification', name: a, value: true })),
+    containsPlace: rooms.filter((r) => isFilled(r.name) && isFilled(r.description)).map((r) => ({ '@type': 'HotelRoom', name: r.name, description: r.description })),
   },
 ];
 
@@ -87,7 +91,7 @@ const sizesBig = '(min-width: 1000px) 600px, (min-width: 768px) 50vw, 100vw';
 const sizesSmall = '(min-width: 1000px) 290px, (min-width: 768px) 25vw, 50vw';
 const gallery = galleryItems.map((g, i) => ({ ...g, cls: `g${i + 2}` }));
 ---
-<Base {title} {description} {path} {current} footer="compact" bookHref="#disponibilidad" {jsonLd}>
+<Base {title} {description} {path} {current} footer="compact" bookHref="#disponibilidad" {jsonLd} ogImage={og}>
   <section class="top container">
     <nav class="crumbs enter" style="--i:0" aria-label={t.route}>
       <a href={localizePath('/', lang)}>{t.home}</a><span aria-hidden="true">/</span><span aria-current="page">{p.name}</span>
@@ -123,11 +127,11 @@ const gallery = galleryItems.map((g, i) => ({ ...g, cls: `g${i + 2}` }));
     <form method="get" action="#">
       <div class="field">
         <label for="a-in">{t.checkin}</label>
-        <input id="a-in" name="llegada" type="date" />
+        <input id="a-in" name="llegada" type="date" required data-in />
       </div>
       <div class="field">
         <label for="a-out">{t.checkout}</label>
-        <input id="a-out" name="salida" type="date" />
+        <input id="a-out" name="salida" type="date" required data-out />
       </div>
       <div class="field">
         <label for="a-pax">{t.guests}</label>
@@ -168,13 +172,16 @@ const gallery = galleryItems.map((g, i) => ({ ...g, cls: `g${i + 2}` }));
     <div class="container inc">
       <h2>{t.included}</h2>
       <ul>
-        {included.map((i) => <li>{i}</li>)}
+        {included.filter(isFilled).map((i) => <li>{i}</li>)}
       </ul>
     </div>
   </section>
 </Base>
 
 <script>
+  import { bindBookingDates } from '../scripts/booking-dates';
+  document.querySelectorAll<HTMLFormElement>('#disponibilidad form').forEach(bindBookingDates);
+
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const list = document.getElementById('room-list');
   const heading = document.getElementById('rooms-count');
@@ -262,6 +269,7 @@ const gallery = galleryItems.map((g, i) => ({ ...g, cls: `g${i + 2}` }));
   button[type='submit']:hover { background: #9E3D26; box-shadow: 0 10px 24px rgba(184, 73, 47, 0.35); transform: translateY(-1px); }
   button[type='submit']:active, .filters button:active { transform: scale(0.97); }
   form :focus-visible { outline-color: var(--white); }
+  input:focus-visible, select:focus-visible { outline: 3px solid var(--white); outline-offset: 2px; }
   .perks { flex: 1 1 100%; font-size: 14px; font-weight: 700; color: var(--mint-2); }
   @media (max-width: 767px) {
     form { padding: 16px; }

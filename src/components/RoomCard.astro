@@ -3,6 +3,7 @@ import { Picture } from 'astro:assets';
 import type { Room } from '../data/site';
 import { getLang, localizePath } from '../i18n';
 import { getRoomPrice, formatPrice } from '../data/prices';
+import { isFilled } from '../data/placeholders';
 interface Props {
   room: Room;
   variant: 'compact' | 'row';
@@ -11,14 +12,15 @@ interface Props {
 }
 const { room, variant, headingLevel = 3 } = Astro.props;
 const lang = getLang(Astro.currentLocale);
-const price = formatPrice(getRoomPrice(room.id), lang);
+const amount = getRoomPrice(room.id);
+const price = amount === null ? null : formatPrice(amount, lang);
 const t = {
   es: { from: 'Desde', night: '/ noche', book: 'Reservar', more: 'Ver detalles y fotos' },
   en: { from: 'From', night: '/ night', book: 'Book', more: 'See details and photos' },
 }[lang];
 const bookHref = localizePath(Astro.props.bookHref ?? (variant === 'compact' ? '#reservar' : '#disponibilidad'), lang);
 const H = `h${headingLevel}` as 'h3';
-const chips = variant === 'compact' ? (room.homeChips ?? room.chips) : room.chips;
+const chips = (variant === 'compact' ? (room.homeChips ?? room.chips) : room.chips).filter(isFilled);
 const alt = variant === 'compact' ? (room.homeImageAlt ?? room.imageAlt) : room.imageAlt;
 const sizes = variant === 'compact' ? '(min-width: 1000px) 376px, (min-width: 768px) 45vw, 100vw' : '(min-width: 768px) 300px, 100vw';
 ---
@@ -29,9 +31,9 @@ const sizes = variant === 'compact' ? '(min-width: 1000px) 376px, (min-width: 76
     </div>
     <div class="c-body">
       <H class="c-title">{room.name}</H>
-      <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>
+      {chips.length > 0 && <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>}
       <div class="c-foot">
-        <p class="price">{t.from} <strong>{price}</strong></p>
+        {price && <p class="price">{t.from} <strong>{price}</strong></p>}
         <a class="btn btn--primary" href={bookHref}>{t.book}<span class="visually-hidden">: {room.name}</span></a>
       </div>
     </div>
@@ -45,10 +47,10 @@ const sizes = variant === 'compact' ? '(min-width: 1000px) 376px, (min-width: 76
       {room.badge && <span class="badge">{room.badge}</span>}
       <H class="r-title">{room.name}</H>
       <p class="r-desc">{room.description}</p>
-      <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>
+      {chips.length > 0 && <ul class="chips">{chips.map((c) => <li class="chip">{c}</li>)}</ul>}
     </div>
     <div class="r-aside">
-      <p class="price">{t.from} <strong>{price}</strong> {t.night}</p>
+      {price && <p class="price">{t.from} <strong>{price}</strong> {t.night}</p>}
       <a class="btn btn--cta" href={bookHref}>{t.book}<span class="visually-hidden">: {room.name}</span></a>
       <a class="more" href="#">{t.more}<span class="visually-hidden">: {room.name}</span></a>
     </div>
@@ -65,7 +67,7 @@ const sizes = variant === 'compact' ? '(min-width: 1000px) 376px, (min-width: 76
   .c-title { font-size: 22px; line-height: 1.2; }
   .c-foot { margin-top: auto; padding-top: 12px; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
   .c-foot .price strong { font-size: 22px; }
-  .c-foot .btn { padding: 11px 20px; }
+  .c-foot .btn { padding: 11px 20px; margin-left: auto; }
 
   .row { border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-wrap: wrap; background: var(--white); }
   .r-media { flex: 1 1 280px; min-width: 0; height: 220px; }

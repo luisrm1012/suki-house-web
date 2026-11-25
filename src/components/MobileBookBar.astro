@@ -7,16 +7,17 @@ const lang = getLang(Astro.currentLocale);
 const { site, properties } = getData(lang);
 const logical = stripLang(Astro.url.pathname);
 const house = properties.find((p) => p.href === logical)?.id;
-const price = formatPrice(house ? getHousePrice(house) : getMinPrice(), lang);
+const amount = house ? getHousePrice(house) : getMinPrice();
+const price = amount === null ? null : formatPrice(amount, lang);
 const t = {
-  es: { wa: 'Escribir por WhatsApp', book: 'Reservar · desde' },
-  en: { wa: 'Message us on WhatsApp', book: 'Book · from' },
+  es: { wa: 'Escribir por WhatsApp', book: 'Reservar', from: 'desde' },
+  en: { wa: 'Message us on WhatsApp', book: 'Book', from: 'from' },
 }[lang];
 const href = localizePath(Astro.props.href ?? '/#reservar', lang);
 ---
 <div class="bar">
   <a class="wa" href={site.whatsapp.href} aria-label={t.wa}><Icon name="whatsapp" size={24} /></a>
-  <a class="cta" {href}>{t.book} {price}</a>
+  <a class="cta" {href}>{price ? `${t.book} · ${t.from} ${price}` : t.book}</a>
 </div>
 <style>
   .bar { display: none; }
